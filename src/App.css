@@ -18,6 +18,11 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+#timezones-textarea {
+  font-size: 1.2rem;
+  font-family: "Twemoji Country Flags", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);

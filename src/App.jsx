@@ -29,6 +29,7 @@ function App() {
 
 
   /* local variables */
+  let textareaText = "Time not selected yet"
   const textareaRef = useRef(null);
 
 
@@ -38,45 +39,93 @@ function App() {
     setSelectedTime(selectedTimeObject);
   }
 
-  function handleTimezoneChange(event) {
+  function handleTimezoneArrayChange(event, type) {
     const inputValue = event.target.value;
-    const isValidOption = timezoneList.some(timezoneItem => timezoneItem.name === inputValue);
-
-    if (isValidOption) {
-      setSelectedTimezone(event.target.value);
-    }
-
-    return;
-  }
-
-  function handleTimezoneArrayChange(event) {
-    /* build flag based on selected time */
-    /* build object based on zone */
-    /* let new_zone_selected_obj = {
-      name: e.
-    } */
-
-    const inputValue = event.target.value;
-
-    const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === inputValue);
-
-
-    if (selectedTimezone) {
+    function addTimezone(timezoneItem) {
       let new_zone_selected_obj = {
-        name: selectedTimezone.name,
-        currentTimeOffsetInMinutes: selectedTimezone.currentTimeOffsetInMinutes,
-        countryFlag: getFlagEmoji(selectedTimezone.countryCode)
+        name: timezoneItem.name,
+        currentTimeOffsetInMinutes: timezoneItem.currentTimeOffsetInMinutes,
+        countryFlag: getFlagEmoji(timezoneItem.countryCode)
+      }
+
+      // Check if item is already in selection
+      if (timezoneSelection.some(element => element.name === new_zone_selected_obj.name)) {
+        alert("Item already in selection!")
+        return
       }
 
       setSelectedTimezone(event.target.value)
       setSelectionItem(new_zone_selected_obj)
+
       event.target.value = ''
+      return
     }
 
+    // Delete event
+    if (type === "delete") {
+      setSelectedTimezone(event.target.value)
+      deleteSelectionItem(inputValue)
+      event.target.value = ''
+      return
+    }
 
+    // Enter keyup event
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const fuzzySelectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name.toLowerCase().includes(inputValue));
+      if (fuzzySelectedTimezone) {
+        addTimezone(fuzzySelectedTimezone)
+      }
+    }
 
-    return;
+    // Click event
+    const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === inputValue);
+    if (selectedTimezone) {
+      addTimezone(selectedTimezone)
+    }
   }
+
+
+
+  function createTextareaTimes() {
+
+    if (timezoneSelection.length === 0) {
+      return
+    }
+    const groupedObjects = new Map();
+    timezoneSelection.forEach(obj => {
+      const offset = obj.currentTimeOffsetInMinutes;
+
+      if (!groupedObjects.has(offset)) {
+        groupedObjects.set(offset, []);
+      }
+
+      groupedObjects.get(offset).push(obj.countryFlag);
+    });
+
+    const resultText = [];
+    groupedObjects.forEach((timezones, offset) => {
+      const formattedTime = selectedTime.plus({ minutes: offset }).toFormat('HH:mm');
+      const timezoneText = timezones.join(" ");
+
+      // Check if minutes are '00' before appending 'H', otherwise use 'hs'
+      const displayTime = formattedTime.endsWith(":00") ? formattedTime.slice(0, -3) + "H" : formattedTime + "hs";
+
+      resultText.push(`${displayTime} ${timezoneText}`);
+    });
+
+    console.log(resultText.join('\n'));
+
+    textareaText = resultText.join('\n')
+
+
+
+
+    // selectedTimezone ? selectedTime.setZone(selectedTimezone).toFormat('HH:mm') : "Time not selected yet"
+
+  }
+
+  createTextareaTimes()
 
   async function handleTextareaCopy() {
     const text = textareaRef.current.value;
@@ -94,7 +143,7 @@ function App() {
 
   return (
     <>
-      <h1>Timezone Clock</h1>
+      <h1>Emoji-time:</h1>
       <h2>⌚ Current Timezone: {currentTimezone}</h2>
       <label htmlFor="time-selector-input">Choose a time for your event: </label>
       <input value={selectedTime.toFormat('HH:mm') || ''} onChange={handleTimeChange} type="time" id="time-selector-input" name="time-selector-input" placeholder='13:00' required />
@@ -102,7 +151,7 @@ function App() {
 
       <hr />
       <h2>👇🏻 Select your timezone:</h2>
-      <input list="timezone-selector" id="timezone-selector-input" name="timezone-selector-input" onChange={handleTimezoneArrayChange} />
+      <input list="timezone-selector" id="timezone-selector-input" name="timezone-selector-input" onChange={(event) => handleTimezoneArrayChange(event, "add")} onKeyUp={(e) => { if (e.key === "Enter") { handleTimezoneArrayChange(e) } }} />
       <datalist id="timezone-selector">
         {timezoneList.map((timezoneItem) => (
           <option key={timezoneItem.name} value={timezoneItem.name}>
@@ -117,8 +166,8 @@ function App() {
       <h2>📃 Current selection: </h2>
       <ul>
         {timezoneSelection.map((timezoneItem) => (
-          <li style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.name} <span>— {timezoneItem.currentTimeOffsetInMinutes}</span> <span>— {timezoneItem.countryFlag}</span>
-          </li>
+          <button onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag}<span> - </span>{timezoneItem.name}
+          </button>
         ))}
       </ul>
 
@@ -126,7 +175,7 @@ function App() {
       <hr />
       <br />
       <h2>📋 Test textarea copy-zone </h2>
-      <textarea name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={selectedTimezone ? selectedTime.setZone(selectedTimezone).toFormat('HH:mm') : "Time not selected yet"} ref={textareaRef}>
+      <textarea name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={textareaText} ref={textareaRef}>
 
       </textarea>
 
