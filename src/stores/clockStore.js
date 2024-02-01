@@ -8,9 +8,9 @@ const useClockStore = create((set) => ({
     currentTime: DateTime.now(),
     selectedTime: DateTime.now(),
     currentTimezone: DateTime.now().zoneName,
-    selectedTimezone: "",
     setSelectedTime: (selectedTime) => set({ selectedTime }),
-    setSelectedTimezone: (selectedTimezone) => set({ selectedTimezone }),
+    // selectedTimezone: "",
+    // setSelectedTimezone: (selectedTimezone) => set({ selectedTimezone }),
   }));
 
   export default useClockStore;

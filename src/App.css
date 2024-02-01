@@ -21,6 +21,12 @@
 #timezones-textarea {
   font-size: 1.2rem;
   font-family: "Twemoji Country Flags", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  cursor: pointer;
+}
+
+#timezone-selector-input {
+  height: 2em;
+  width: 40%;
 }
 
 @keyframes logo-spin {
