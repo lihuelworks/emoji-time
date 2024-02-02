@@ -3,6 +3,7 @@ import './App.css';
 /* libraries */
 import { useRef, useState } from 'react';
 import { DateTime } from 'luxon';
+import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
 /* stores */
 import useClockStore from './stores/clockStore.js';
 import useZoneSelectionStore from './stores/zoneSelectionStore.js';
@@ -14,12 +15,17 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 
+
 function App() {
+  if (window.chrome) {
+    // console.log("chrome!")
+    polyfillCountryFlagEmojis();
+  }
+  // TODO: remove unnecessary parts of state
   /* useClockStore */
   // timezoneList from tzdb package
   const timezoneList = useClockStore((state) => state.timezoneList);
   // local time data (in state for some reason)
-  // TODO: remove unnecessary parts of state
   const currentTimezone = useClockStore((state) => state.currentTimezone);
   const selectedTime = useClockStore((state) => state.selectedTime);
   const setSelectedTime = useClockStore((state) => state.setSelectedTime);
@@ -29,9 +35,10 @@ function App() {
   const setSelectionItem = useZoneSelectionStore((state) => state.setSelectionItem);
   const deleteSelectionItem = useZoneSelectionStore((state) => state.deleteSelectionItem);
 
-
   /* local variables */
+  // TODO: figure out how to remove this unnecessary state
   const [inputValue, setInputValue] = useState('');
+  const [autocompleteState, setAutocompleteState] = useState('');
   let textareaText = "Time not selected yet"
   const textareaRef = useRef(null);
 
@@ -51,9 +58,11 @@ function App() {
     setSelectedTime(selectedTimeObject);
   }
 
-  function handleTimezoneArrayChange(event, type) {
-    console.log("newValue", event)
-    let inputValue = event.name;
+  function handleTimezoneArrayChange(event, type, reason) {
+    console.log("reason!! ", reason)
+    console.log("event! ", inputValue)
+    console.log("type", type)
+    let chosenValue;
     function addTimezone(timezoneItem) {
       // console.log(timezoneItem)
       let new_zone_selected_obj = {
@@ -67,45 +76,57 @@ function App() {
       // Check if item is already in selection
       if (timezoneSelection.some(element => element.name === new_zone_selected_obj.name)) {
         alert("Item already in selection!")
-        event.target.value = ''
+        event = ''
         return
       }
 
       setSelectionItem(new_zone_selected_obj)
-      console.log("addTimezone EVENT VALUE: ", event.target.inputValue)
-      event.target.value = ''
+      event = ''
       setInputValue('')
       return
     }
 
     // Delete event
     if (type === "delete") {
-      deleteSelectionItem(inputValue)
-      event.target.value = ''
+      chosenValue = event.target.value;
+      console.log("value for delete ", chosenValue)
+      deleteSelectionItem(chosenValue)
       return
     }
 
     // Enter keyup event
-    if (event.key === 'Enter') {
-      console.log("ENTER SPOTTED", inputValue)
-      inputValue = inputValue.replace(/ /g, "_");
-      console.log("after replace", inputValue)
+    if (type === 'fuzzyAdd') {
+      chosenValue = inputValue;
+      // console.log("ENTER SPOTTED", chosenValue)
+      // chosenValue = chosenValue.replace(/ /g, "_");
+      // console.log("after replace", chosenValue)
 
-      event.preventDefault();
+      const fuzzySelectedTimezone = timezoneList.find(timezoneItem => {
+        console.log("currentTimeFormat ", timezoneItem.currentTimeFormat.toLowerCase())
+        if (timezoneItem.name.toLowerCase().includes(chosenValue.replace(/ /g, "_")) || timezoneItem.countryName.toLowerCase().includes(chosenValue) || timezoneItem.alternativeName.toLowerCase().includes(chosenValue)) {
+          return true
+        } else if (timezoneItem.currentTimeFormat.toLowerCase().includes(chosenValue)) {
+          return true
+        } else {
+          return false
+        }
 
-      const fuzzySelectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name.toLowerCase().includes(inputValue));
+      });
 
       console.log("fuzzySelectedTimezone", fuzzySelectedTimezone)
       if (fuzzySelectedTimezone) {
         addTimezone(fuzzySelectedTimezone)
       }
-      event.target.value = ''
+      setInputValue('')
     }
 
     // Click event
-    const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === inputValue);
+    chosenValue = event.name;
+
+    const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === chosenValue);
     if (selectedTimezone) {
       addTimezone(selectedTimezone)
+      setInputValue('')
     }
   }
 
@@ -125,7 +146,7 @@ function App() {
         groupedObjects.set(offset, []);
       }
       if (nameOccurrences[obj.countryName] > 1) {
-        let timezoneItemText = `${obj.countryFlag} ${obj.name.split("/")[1].split("_").join(" ") } (${obj.alternativeName})`
+        let timezoneItemText = `${obj.countryFlag} ${obj.name.split("/")[1].split("_").join(" ")} (${obj.alternativeName})`
         // console.log("NAMED OCCURENCE SPOTTED IN TEXTAREA", timezonePlusAlternativeName)
         groupedObjects.get(offset).push(timezoneItemText);
       } else {
@@ -135,7 +156,7 @@ function App() {
 
     const resultText = [];
     groupedObjects.forEach((timezones, offset) => {
-      const formattedTime = selectedTime.plus({ minutes: offset }).toFormat('HH:mm');
+      const formattedTime = selectedTime.plus({ minutes: (offset - selectedTime.offset) }).toFormat('HH:mm');
       const timezoneText = timezones.join(" ");
 
       // Check if minutes are '00' before appending 'H', otherwise use 'hs'
@@ -172,9 +193,10 @@ function App() {
       <h2>⌚ Current Timezone: {currentTimezone}</h2>
       <label htmlFor="time-selector-input">Choose a time for your event: </label>
       <input value={selectedTime.toFormat('HH:mm') || ''} onChange={handleTimeChange} type="time" id="time-selector-input" name="time-selector-input" placeholder='13:00' required />
-      <p>Your selected time is: {selectedTime.toFormat('HH:mm') || "Time not selected yet"}</p>
+      <p>Your selected time is: </p>
+      <h2>{selectedTime.toFormat('HH:mm') || "Time not selected yet"}</h2>
 
-      <hr />
+      {/* <hr />
       <h2>👇🏻 Select your timezone:</h2>
       <input type='text' list="timezone-selector" id="timezone-selector-input" name="timezone-selector-input" onChange={(event) => handleTimezoneArrayChange(event, "add")} onKeyUp={(e) => { if (e.key === "Enter") { handleTimezoneArrayChange(e) } }} />
       <datalist id="timezone-selector">
@@ -183,42 +205,41 @@ function App() {
             {nameOccurrences[timezoneItem.countryName] > 1 && `${timezoneItem.countryName} - ${timezoneItem.alternativeName}`}
           </option>
         ))}
-      </datalist>
+      </datalist> */}
 
       <hr />
       <h2>👇🏻 Select your timezone:</h2>
       <h3>(ALT Combo Box)</h3>
 
       <Autocomplete
-            disablePortal
-            id="timezone-selector-input"
-            options={timezoneList}
-            getOptionLabel={(option) => option.name}
-            sx={{ width: 500 }}
-            /* value */
-            inputValue={inputValue}
-            // value={timezoneItem.name}
-            /* events */
-            onInputChange={(event, newInputValue) => {
-              setInputValue(newInputValue);
-            }}
-            onChange={(event, newValue) => handleTimezoneArrayChange(newValue, "add")}
-            onKeyUp={(e) => { if (e.key === "Enter") { handleTimezoneArrayChange(e) } }}
-            /* ----- */
-            renderOption={(props, option) => (
-                <Box component="li" {...props}>
-                    {`${option.countryName} - ${option.alternativeName}`}
-                </Box>
-            )}
-            renderInput={(params) => <TextField {...params} label="Choose your timezones" />}
-        />
+        disablePortal
+        id="timezone-selector-input"
+        options={timezoneList}
+        getOptionLabel={(option) => `${getFlagEmoji(option.countryCode)}  ${option.countryName} - ${option.name.split("/")[1].split("_").join(" ")} (${option.alternativeName})`}
+        getOptionKey={(option) => option.name}
+        /* value */
+        inputValue={inputValue}
+        /* events */
+        onInputChange={(event, newInputValue) => {
+          setInputValue(newInputValue);
+        }}
+        onChange={(event, newValue, reason) => handleTimezoneArrayChange(newValue, "add", reason)}
+        onKeyUp={(event, newValue) => { if (event.key === "Enter") { handleTimezoneArrayChange(newValue, "fuzzyAdd") } }}
+        /* ----- */
+        /* renderOption={(props, option) => (
+          <Box component="li" {...props}>
+            {`${option.countryName} - ${option.alternativeName}`}
+          </Box>
+        )} */
+        renderInput={(params) => <TextField {...params} label="Choose your timezones" />}
+      />
 
 
 
       <h2>📃 Current selection: </h2>
       <ul>
         {timezoneSelection.map((timezoneItem) => (
-          <button onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName} {nameOccurrences[timezoneItem.countryName] > 1 && "- " + timezoneItem.name.split("/")[1].split("_").join(" ") + " ("+ timezoneItem.alternativeName + ")"}
+          <button onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName} {nameOccurrences[timezoneItem.countryName] > 1 && "- " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
           </button>
         ))}
       </ul>
