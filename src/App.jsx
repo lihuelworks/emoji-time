@@ -10,10 +10,11 @@ import useZoneSelectionStore from './stores/zoneSelectionStore.js';
 /* utils */
 import getFlagEmoji from './utils/getFlagEmoji.js';
 /* components */
-import TimezoneListComponent from './components/TimezoneListComponent.jsx'
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
+import { Snackbar } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 function App() {
@@ -35,15 +36,17 @@ function App() {
   const setSelectionItem = useZoneSelectionStore((state) => state.setSelectionItem);
   const deleteSelectionItem = useZoneSelectionStore((state) => state.deleteSelectionItem);
 
-  /* local variables */
+  /* local variables / state */
+  let textareaText = "Time not selected yet"
+  const textareaRef = useRef(null);
   const [inputValue, setInputValue] = useState('');
+  const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   // For future reference, any time this state (autocompleteKey) is used/set, it's ONLY to reset input value after selection
   // Hate this solution with all my soul, but it's the only way to reliably do it (https://github.com/mui/material-ui/issues/4736)
   const [autocompleteKey, setAutocompleteKey] = useState(0);
-  let textareaText = "Time not selected yet"
-  const textareaRef = useRef(null);
 
-  /* Map to use alternative names in case of repeated countryName (e.g USA EST, PST, etc) */
+  // Map to use alternative names in case of repeated countryName (e.g USA EST, PST, etc)
   const nameOccurrences = {};
   timezoneList.forEach((timezoneItem) => {
     const { countryName } = timezoneItem;
@@ -51,6 +54,32 @@ function App() {
     nameOccurrences[countryName] = (nameOccurrences[countryName] || 0) + 1;
     // console.log("Occurrence ", countryName, nameOccurrences[countryName])
   });
+  
+  // addTimezone used for handlers and templates 
+  function addTimezone(timezoneItem) {
+    // console.log(timezoneItem)
+    let new_zone_selected_obj = {
+      name: timezoneItem.name,
+      countryName: timezoneItem.countryName,
+      alternativeName: timezoneItem.alternativeName,
+      currentTimeOffsetInMinutes: timezoneItem.currentTimeOffsetInMinutes,
+      countryFlag: getFlagEmoji(timezoneItem.countryCode)
+    }
+
+    // Check if item is already in selection
+    if (timezoneSelection.some(element => element.name === new_zone_selected_obj.name)) {
+      // alert("Item already in selection!")
+      setSnackbarMessage('Item already in selection!')
+      setIsSnackbarOpen(true)
+
+      return
+    }
+
+    setSelectionItem(new_zone_selected_obj)
+
+    setInputValue('')
+    return
+  }
 
 
   /* event handlers */
@@ -68,28 +97,7 @@ function App() {
       return
     }
     let chosenValue;
-    function addTimezone(timezoneItem) {
-      // console.log(timezoneItem)
-      let new_zone_selected_obj = {
-        name: timezoneItem.name,
-        countryName: timezoneItem.countryName,
-        alternativeName: timezoneItem.alternativeName,
-        currentTimeOffsetInMinutes: timezoneItem.currentTimeOffsetInMinutes,
-        countryFlag: getFlagEmoji(timezoneItem.countryCode)
-      }
-
-      // Check if item is already in selection
-      if (timezoneSelection.some(element => element.name === new_zone_selected_obj.name)) {
-        alert("Item already in selection!")
-        event = ''
-        return
-      }
-
-      setSelectionItem(new_zone_selected_obj)
-      event = ''
-      setInputValue('')
-      return
-    }
+    
 
     // Delete event for selection buttons
     if (type === "delete") {
@@ -121,6 +129,9 @@ function App() {
       console.log("fuzzySelectedTimezone", fuzzySelectedTimezone)
       if (fuzzySelectedTimezone) {
         addTimezone(fuzzySelectedTimezone)
+      } else {
+        setSnackbarMessage(`No timezone found for "${chosenValue}"`)
+        setIsSnackbarOpen(true)
       }
       setInputValue('')
     }
@@ -137,8 +148,16 @@ function App() {
     }
   }
 
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setIsSnackbarOpen(false);
+    setSnackbarMessage('')
+  };
 
-  /* Creates the text inside the textarea */
+
+  // Creates the text inside the textarea
   function createTextareaTimes() {
     // console.log("CREATE TEXTAREA CALLED!")
 
@@ -194,8 +213,30 @@ function App() {
     }
   }
 
+  // TODO: this is the alert action, move to it's own component to also control styles and message
+  const snackbarAction = (
+    <>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={handleSnackbarClose}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </>
+  )
+
   return (
     <>
+      <Snackbar
+        open={isSnackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        message={snackbarMessage}
+        action={snackbarAction}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      />
       <h1>Emoji-time:</h1>
       <h2>⌚ Current Timezone: {currentTimezone}</h2>
       <label htmlFor="time-selector-input">Choose a time for your event: </label>
@@ -204,6 +245,20 @@ function App() {
       <h2>{selectedTime.toFormat('HH:mm') || "Time not selected yet"}</h2>
 
       <hr />
+      <h2>📃 Templates: </h2>
+
+
+      <hr />
+      <h2>📃 Current selection: </h2>
+      {timezoneSelection.length ?
+        (<ul>
+          {timezoneSelection.map((timezoneItem) => (
+            <button onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
+            </button>
+          ))}
+        </ul>)
+        : (<p>Nothing selected yet! Maybe add some timezones!</p>)}
+
       <h2>👇🏻 Select your timezone:</h2>
       <h3>(ALT Combo Box)</h3>
 
@@ -223,25 +278,11 @@ function App() {
         }}
         onChange={(event, newValue, reason) => handleTimezoneArrayChange(newValue, "add", reason)}
         onKeyUp={(event, newValue) => { if (event.key === "Enter") { handleTimezoneArrayChange(newValue, "fuzzyAdd") } }}
-        // renderOption, not used rn because of getOptionLabel it's used in it's absence (good enough for now)
-        /* renderOption={(props, option) => (
-          <Box component="li" {...props}>
-            {`${getFlagEmoji(option.countryCode)}  ${option.countryName} - ${option.name.split("/")[1].split("_").join(" ")} (${option.alternativeName})`}
-          </Box>
-        )} */
-        renderInput={(params) => <TextField {...params} label="Choose your timezones" />
-        }
+        renderInput={(params) => <TextField {...params} label="Choose your timezones" />}
       />
 
 
 
-      <h2>📃 Current selection: </h2>
-      <ul>
-        {timezoneSelection.map((timezoneItem) => (
-          <button onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
-          </button>
-        ))}
-      </ul>
 
       <br />
       <hr />
