@@ -36,9 +36,10 @@ function App() {
   const deleteSelectionItem = useZoneSelectionStore((state) => state.deleteSelectionItem);
 
   /* local variables */
-  // TODO: figure out how to remove this unnecessary state
   const [inputValue, setInputValue] = useState('');
-  const [autocompleteState, setAutocompleteState] = useState('');
+  // For future reference, any time this state (autocompleteKey) is used/set, it's ONLY to reset input value after selection
+  // Hate this solution with all my soul, but it's the only way to reliably do it (https://github.com/mui/material-ui/issues/4736)
+  const [autocompleteKey, setAutocompleteKey] = useState(0);
   let textareaText = "Time not selected yet"
   const textareaRef = useRef(null);
 
@@ -62,6 +63,10 @@ function App() {
     console.log("reason!! ", reason)
     console.log("event! ", inputValue)
     console.log("type", type)
+    if (reason === "clear") {
+      setAutocompleteKey((prevKey) => prevKey + 1)
+      return
+    }
     let chosenValue;
     function addTimezone(timezoneItem) {
       // console.log(timezoneItem)
@@ -86,7 +91,7 @@ function App() {
       return
     }
 
-    // Delete event
+    // Delete event for selection buttons
     if (type === "delete") {
       chosenValue = event.target.value;
       console.log("value for delete ", chosenValue)
@@ -94,7 +99,7 @@ function App() {
       return
     }
 
-    // Enter keyup event
+    // ENTER keyup event
     if (type === 'fuzzyAdd') {
       chosenValue = inputValue;
       // console.log("ENTER SPOTTED", chosenValue)
@@ -102,7 +107,7 @@ function App() {
       // console.log("after replace", chosenValue)
 
       const fuzzySelectedTimezone = timezoneList.find(timezoneItem => {
-        console.log("currentTimeFormat ", timezoneItem.currentTimeFormat.toLowerCase())
+        // console.log("currentTimeFormat ", timezoneItem.currentTimeFormat.toLowerCase())
         if (timezoneItem.name.toLowerCase().includes(chosenValue.replace(/ /g, "_")) || timezoneItem.countryName.toLowerCase().includes(chosenValue) || timezoneItem.alternativeName.toLowerCase().includes(chosenValue)) {
           return true
         } else if (timezoneItem.currentTimeFormat.toLowerCase().includes(chosenValue)) {
@@ -121,12 +126,14 @@ function App() {
     }
 
     // Click event
-    chosenValue = event.name;
-
-    const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === chosenValue);
-    if (selectedTimezone) {
+    if (reason === "selectOption") {
+      // previously, reason was if "selecteTimezone existed", which will hopefully never be the case as it's always a selectable option.
+      // selectOption is a much better candidate as it declares user intent
+      chosenValue = event.name;
+      const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === chosenValue);
       addTimezone(selectedTimezone)
       setInputValue('')
+      setAutocompleteKey((prevKey) => prevKey + 1)
     }
   }
 
@@ -196,26 +203,17 @@ function App() {
       <p>Your selected time is: </p>
       <h2>{selectedTime.toFormat('HH:mm') || "Time not selected yet"}</h2>
 
-      {/* <hr />
-      <h2>👇🏻 Select your timezone:</h2>
-      <input type='text' list="timezone-selector" id="timezone-selector-input" name="timezone-selector-input" onChange={(event) => handleTimezoneArrayChange(event, "add")} onKeyUp={(e) => { if (e.key === "Enter") { handleTimezoneArrayChange(e) } }} />
-      <datalist id="timezone-selector">
-        {timezoneList.map((timezoneItem) => (
-          <option key={timezoneItem.name} value={timezoneItem.name}>
-            {nameOccurrences[timezoneItem.countryName] > 1 && `${timezoneItem.countryName} - ${timezoneItem.alternativeName}`}
-          </option>
-        ))}
-      </datalist> */}
-
       <hr />
       <h2>👇🏻 Select your timezone:</h2>
       <h3>(ALT Combo Box)</h3>
 
       <Autocomplete
+        // key: used to reset input value after selecting option (no other way around it)
+        key={autocompleteKey}
         disablePortal
         id="timezone-selector-input"
         options={timezoneList}
-        getOptionLabel={(option) => `${getFlagEmoji(option.countryCode)}  ${option.countryName} - ${option.name.split("/")[1].split("_").join(" ")} (${option.alternativeName})`}
+        getOptionLabel={(option) => option.defaultPlaceholder ? option.defaultPlaceholder : `${option.countryName} - ${option.name.split("/")[1].split("_").join(" ")} (${option.alternativeName})`}
         getOptionKey={(option) => option.name}
         /* value */
         inputValue={inputValue}
@@ -225,13 +223,14 @@ function App() {
         }}
         onChange={(event, newValue, reason) => handleTimezoneArrayChange(newValue, "add", reason)}
         onKeyUp={(event, newValue) => { if (event.key === "Enter") { handleTimezoneArrayChange(newValue, "fuzzyAdd") } }}
-        /* ----- */
+        // renderOption, not used rn because of getOptionLabel it's used in it's absence (good enough for now)
         /* renderOption={(props, option) => (
           <Box component="li" {...props}>
-            {`${option.countryName} - ${option.alternativeName}`}
+            {`${getFlagEmoji(option.countryCode)}  ${option.countryName} - ${option.name.split("/")[1].split("_").join(" ")} (${option.alternativeName})`}
           </Box>
         )} */
-        renderInput={(params) => <TextField {...params} label="Choose your timezones" />}
+        renderInput={(params) => <TextField {...params} label="Choose your timezones" />
+        }
       />
 
 
@@ -239,7 +238,7 @@ function App() {
       <h2>📃 Current selection: </h2>
       <ul>
         {timezoneSelection.map((timezoneItem) => (
-          <button onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName} {nameOccurrences[timezoneItem.countryName] > 1 && "- " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
+          <button onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
           </button>
         ))}
       </ul>
@@ -257,7 +256,6 @@ function App() {
 
       <button onClick={handleTextareaCopy}> 📋Copy text!</button>
 
-      {/* <TimezoneListComponent /> */}
     </>
   );
 }
