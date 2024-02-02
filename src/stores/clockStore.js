@@ -7,7 +7,6 @@ let timezoneListArray = getTimeZones()
 
 // Sort the array by alternativeName
 timezoneListArray.sort((a, b) => a.countryName.localeCompare(b.countryName));
-
 // Add the countryFlag property to each object
 const newTimezoneListArray = timezoneListArray.map(item => ({
   ...item,
