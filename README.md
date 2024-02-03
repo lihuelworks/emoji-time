@@ -36,9 +36,3 @@ If you'd like to contribute to Emoji Time, please follow these steps:
 3. Commit your changes (`git commit -m 'Add some feature'`).
 4. Push to the branch (`git push origin feature/YourFeature`).
 5. Open a pull request.
-
-Thank you for considering contributions!
-
----
-
-Feel free to further customize the content to better suit your project!
