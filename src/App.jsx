@@ -10,14 +10,14 @@ import useZoneSelectionStore from './stores/zoneSelectionStore.js';
 /* utils */
 import getFlagEmoji from './utils/getFlagEmoji.js';
 /* constants */
-import { timezoneTemplates } from './constants/timezoneTemplates.js';
+import timezoneTemplates from './constants/timezoneTemplates.js';
 /* components */
+import { TextareaAutosize } from '@mui/base/TextareaAutosize';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { Snackbar } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-
 
 function App() {
   if (window.chrome) {
@@ -180,7 +180,7 @@ function App() {
       if (!groupedObjects.has(offset)) {
         groupedObjects.set(offset, []);
       }
-      if (nameOccurrences[obj.countryName] > 1) {
+      if (nameOccurrences[obj.countryName] > 1 && (obj.countryName === 'United States' || obj.countryName === 'Brazil')) {
         let timezoneItemText = `${obj.countryFlag} ${obj.name.split("/")[1].split("_").join(" ")} (${obj.alternativeName})`
         // console.log("NAMED OCCURENCE SPOTTED IN TEXTAREA", timezonePlusAlternativeName)
         groupedObjects.get(offset).push(timezoneItemText);
@@ -208,11 +208,16 @@ function App() {
 
   createTextareaTimes()
 
-  async function handleTextareaCopy() {
+  async function handleTextareaCopy(event) {
     const text = textareaRef.current.value;
+    if (event.isResizing) {
+      return
+    }
     try {
       await navigator.clipboard.writeText(text);
-      alert("Copied to clipboard!");
+      // alert("Copied to clipboard!");
+      setSnackbarMessage('Copied to clipboard!')
+      setIsSnackbarOpen(true)
     } catch (err) {
       console.error(
         "Unable to copy to clipboard.",
@@ -285,7 +290,7 @@ function App() {
         disablePortal
         id="timezone-selector-input"
         options={timezoneList}
-        getOptionLabel={(option) => option.defaultPlaceholder ? option.defaultPlaceholder : `${option.countryName} - ${option.name.split("/")[1].split("_").join(" ")} (${option.alternativeName})`}
+        getOptionLabel={(option) => option.defaultPlaceholder ? option.defaultPlaceholder : `${option.countryFlag} ${option.countryName} - ${option.name.split("/")[1].split("_").join(" ")} (${option.alternativeName})`}
         getOptionKey={(option) => option.name}
         /* value */
         inputValue={inputValue}
@@ -305,14 +310,14 @@ function App() {
       <hr />
       <br />
       <h2>📋 Test textarea copy-zone </h2>
-      <textarea onClick={handleTextareaCopy} name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={textareaText} ref={textareaRef}>
+      <TextareaAutosize onClick={handleTextareaCopy} name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={textareaText} ref={textareaRef}>
 
-      </textarea>
+      </TextareaAutosize>
 
       <br />
       <br />
 
-      <button onClick={handleTextareaCopy}> 📋Copy text!</button>
+      <button onClick={handleTextareaCopy()}> 📋Copy text!</button>
 
     </>
   );
