@@ -40,7 +40,7 @@ function App() {
   
 
   /* local variables / state */
-  let textareaText = "Time not selected yet"
+  let textareaText = ""
   const textareaRef = useRef(null);
   const [inputValue, setInputValue] = useState('');
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
@@ -208,11 +208,11 @@ function App() {
 
   createTextareaTimes()
 
-  async function handleTextareaCopy(event) {
+  async function handleTextareaCopy() {
     const text = textareaRef.current.value;
-    if (event.isResizing) {
-      return
-    }
+  if(!textareaRef.current.value){
+    return
+  }
     try {
       await navigator.clipboard.writeText(text);
       // alert("Copied to clipboard!");
@@ -240,6 +240,7 @@ function App() {
       </IconButton>
     </>
   )
+  console.log("texarea check!", textareaRef.current?.value)
 
   return (
     <>
@@ -310,14 +311,15 @@ function App() {
       <hr />
       <br />
       <h2>📋 Test textarea copy-zone </h2>
-      <TextareaAutosize onClick={handleTextareaCopy} name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={textareaText} ref={textareaRef}>
+      <textarea onClick={handleTextareaCopy} name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={textareaText} ref={textareaRef} placeholder='Time not selected yet' className={textareaText.trim() === '' ? 'timezones-textarea-empty' : ''}
+>
 
-      </TextareaAutosize>
+      </textarea>
 
       <br />
       <br />
 
-      <button onClick={handleTextareaCopy()}> 📋Copy text!</button>
+      <button onClick={handleTextareaCopy}> 📋Copy text!</button>
 
     </>
   );
