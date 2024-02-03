@@ -1,6 +1,6 @@
 # NOTE: ⚠ Emoji Time is a work in progress ⚠
 
-# ⌛ Emoji Time 👌🏻
+# ⌛ Emoji Time
 
 ## Overview
 
