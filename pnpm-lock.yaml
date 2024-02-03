@@ -11,6 +11,9 @@ dependencies:
   '@emotion/styled':
     specifier: ^11.11.0
     version: 11.11.0(@emotion/react@11.11.3)(@types/react@18.2.51)(react@18.2.0)
+  '@mui/base':
+    specifier: 5.0.0-beta.34
+    version: 5.0.0-beta.34(@types/react@18.2.51)(react-dom@18.2.0)(react@18.2.0)
   '@mui/icons-material':
     specifier: ^5.15.7
     version: 5.15.7(@mui/material@5.15.7)(@types/react@18.2.51)(react@18.2.0)
