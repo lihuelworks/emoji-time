@@ -18,40 +18,26 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
-#timezones-textarea {
-  font-size: 1.2rem;
-  font-family: "Twemoji Country Flags", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  cursor: pointer;
-}
-
 #timezone-selector-input {
   height: 2em;
   width: 700px;
+}
+
+.MuiAutocomplete-listbox {
+  font-family: "Twemoji Country Flags", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
 .MuiAutocomplete-option {
   text-align: left;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+#timezones-textarea {
+  display: flex;
+  font-family: "Twemoji Country Flags", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 3em;
+  padding-bottom: 3em;
+  padding-top: 1.5em;
+  width: 70%;
 }
