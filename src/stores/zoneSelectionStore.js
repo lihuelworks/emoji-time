@@ -10,6 +10,7 @@ const useZoneSelectionStore = create((set) => ({
     const newSelection = state.selection.filter((item) => item.name !== itemName);
     return { selection: newSelection };
   }),
+  clearSelection: () => set({ selection: [] }),
 }));
 
 export default useZoneSelectionStore;

@@ -9,6 +9,8 @@ import useClockStore from './stores/clockStore.js';
 import useZoneSelectionStore from './stores/zoneSelectionStore.js';
 /* utils */
 import getFlagEmoji from './utils/getFlagEmoji.js';
+/* constants */
+import { timezoneTemplates } from './constants/timezoneTemplates.js';
 /* components */
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -19,7 +21,6 @@ import CloseIcon from '@mui/icons-material/Close';
 
 function App() {
   if (window.chrome) {
-    // console.log("chrome!")
     polyfillCountryFlagEmojis();
   }
   // TODO: remove unnecessary parts of state
@@ -35,6 +36,8 @@ function App() {
   const timezoneSelection = useZoneSelectionStore((state) => state.selection);
   const setSelectionItem = useZoneSelectionStore((state) => state.setSelectionItem);
   const deleteSelectionItem = useZoneSelectionStore((state) => state.deleteSelectionItem);
+  const clearSelection = useZoneSelectionStore((state) => state.clearSelection);
+  
 
   /* local variables / state */
   let textareaText = "Time not selected yet"
@@ -88,10 +91,16 @@ function App() {
     setSelectedTime(selectedTimeObject);
   }
 
+  function handleTemplateSelection(templateSelection) {
+    // console.log(timezoneTemplates[templateSelection].timezones)
+    timezoneTemplates[templateSelection].timezones.forEach((timezoneTemplateItem) => {
+      const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === timezoneTemplateItem);
+      addTimezone(selectedTimezone)
+    })
+
+  }
+
   function handleTimezoneArrayChange(event, type, reason) {
-    console.log("reason!! ", reason)
-    console.log("event! ", inputValue)
-    console.log("type", type)
     if (reason === "clear") {
       setAutocompleteKey((prevKey) => prevKey + 1)
       return
@@ -102,7 +111,7 @@ function App() {
     // Delete event for selection buttons
     if (type === "delete") {
       chosenValue = event.target.value;
-      console.log("value for delete ", chosenValue)
+      // console.log("value for delete ", chosenValue)
       deleteSelectionItem(chosenValue)
       return
     }
@@ -126,7 +135,7 @@ function App() {
 
       });
 
-      console.log("fuzzySelectedTimezone", fuzzySelectedTimezone)
+      // console.log("fuzzySelectedTimezone", fuzzySelectedTimezone)
       if (fuzzySelectedTimezone) {
         addTimezone(fuzzySelectedTimezone)
       } else {
@@ -247,9 +256,17 @@ function App() {
       <hr />
       <h2>📃 Templates: </h2>
 
+      {Object.entries(timezoneTemplates).map(([templateName, templateData]) => (
+        <button key={templateName} onClick={() => handleTemplateSelection(templateName)}>
+          {templateData.title}
+        </button>
+      ))}
 
       <hr />
       <h2>📃 Current selection: </h2>
+      <button onClick={() => {
+        clearSelection()
+      }}>Clear all</button>
       {timezoneSelection.length ?
         (<ul>
           {timezoneSelection.map((timezoneItem) => (
