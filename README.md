@@ -22,7 +22,6 @@ Emoji Time is a versatile timezone selector, inspired by [MiduTime](https://midu
 - [Zustand State](https://github.com/pmndrs/zustand)
 - [Material UI](https://material-ui.com/)
 - [React](https://reactjs.org/)
-- [Immer](https://immerjs.github.io/immer/)
 - [Luxon](https://moment.github.io/luxon/)
 - ['@vvo/tzdb'](https://github.com/vvo/tzdb)
 
