@@ -1,5 +1,3 @@
-/* styles */
-import './App.css';
 /* libraries */
 import { useRef, useState } from 'react';
 import { DateTime } from 'luxon';
@@ -37,7 +35,7 @@ function App() {
   const setSelectionItem = useZoneSelectionStore((state) => state.setSelectionItem);
   const deleteSelectionItem = useZoneSelectionStore((state) => state.deleteSelectionItem);
   const clearSelection = useZoneSelectionStore((state) => state.clearSelection);
-  
+
 
   /* local variables / state */
   let textareaText = ""
@@ -57,7 +55,7 @@ function App() {
     nameOccurrences[countryName] = (nameOccurrences[countryName] || 0) + 1;
     // console.log("Occurrence ", countryName, nameOccurrences[countryName])
   });
-  
+
   // addTimezone used for handlers and templates 
   function addTimezone(timezoneItem) {
     // console.log(timezoneItem)
@@ -106,7 +104,7 @@ function App() {
       return
     }
     let chosenValue;
-    
+
 
     // Delete event for selection buttons
     if (type === "delete") {
@@ -210,13 +208,13 @@ function App() {
 
   async function handleTextareaCopy() {
     const text = textareaRef.current.value;
-  if(!textareaRef.current.value){
-    return
-  }
+    if (!textareaRef.current.value) {
+      return
+    }
     try {
       await navigator.clipboard.writeText(text);
       // alert("Copied to clipboard!");
-      setSnackbarMessage('Copied to clipboard!')
+      setSnackbarMessage('Text copied to clipboard!')
       setIsSnackbarOpen(true)
     } catch (err) {
       console.error(
@@ -252,44 +250,48 @@ function App() {
         action={snackbarAction}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       />
-      <h1>Emoji-time:</h1>
-      <h2>⌚ Current Timezone: {currentTimezone}</h2>
+      <h1>Emoji-time</h1>
       <label htmlFor="time-selector-input">Choose a time for your event: </label>
       <input value={selectedTime.toFormat('HH:mm') || ''} onChange={handleTimeChange} type="time" id="time-selector-input" name="time-selector-input" placeholder='13:00' required />
-      <p>Your selected time is: </p>
-      <h2>{selectedTime.toFormat('HH:mm') || "Time not selected yet"}</h2>
 
-      <hr />
+
       <h2>📃 Templates: </h2>
 
-      {Object.entries(timezoneTemplates).map(([templateName, templateData]) => (
-        <button key={templateName} onClick={() => handleTemplateSelection(templateName)}>
-          {templateData.title}
-        </button>
-      ))}
+      <div>
+        {Object.entries(timezoneTemplates).map(([templateName, templateData]) => (
+          <button key={templateName} onClick={() => handleTemplateSelection(templateName)}>
+            {templateData.title}
+          </button>
+        ))}
+      </div>
 
-      <hr />
-      <h2>📃 Current selection: </h2>
-      <button onClick={() => {
-        clearSelection()
-      }}>Clear all</button>
-      {timezoneSelection.length ?
-        (<ul>
-          {timezoneSelection.map((timezoneItem) => (
-            <button onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
-            </button>
-          ))}
-        </ul>)
-        : (<p>Nothing selected yet! Maybe add some timezones!</p>)}
+      
 
-      <h2>👇🏻 Select your timezone:</h2>
-      <h3>(ALT Combo Box)</h3>
+      <h2>👇🏻 Select your timezone: </h2>
+      <details>
+        <summary className='selection-dropdown-title'>
+          📃 Current selection:
+        </summary>
+        {timezoneSelection.length ?
+          (<ul className='flag-selection'>
+            {timezoneSelection.map((timezoneItem) => (
+              <button onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
+              </button>
+            ))}
+          </ul>)
+          : (<p>Nothing selected yet! Maybe add some timezones!</p>)}
 
+        <button
+        className='selection-clear-all-button'
+          onClick={() => {
+            clearSelection()
+          }}>Clear all</button>
+      </details>
       <Autocomplete
+        id="timezone-selector-input"
         // key: used to reset input value after selecting option (no other way around it)
         key={autocompleteKey}
         disablePortal
-        id="timezone-selector-input"
         options={timezoneList}
         getOptionLabel={(option) => option.defaultPlaceholder ? option.defaultPlaceholder : `${option.countryFlag} ${option.countryName} - ${option.name.split("/")[1].split("_").join(" ")} (${option.alternativeName})`}
         getOptionKey={(option) => option.name}
@@ -304,20 +306,12 @@ function App() {
         renderInput={(params) => <TextField {...params} label="Choose your timezones" />}
       />
 
-
-
-
-      <br />
-      <hr />
-      <br />
       <h2>📋 Test textarea copy-zone </h2>
-      <textarea onClick={handleTextareaCopy} name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={textareaText} ref={textareaRef} placeholder='Time not selected yet' className={textareaText.trim() === '' ? 'timezones-textarea-empty' : ''}
->
+
+      <textarea className={`${textareaText.trim() === '' ? '' : 'timezones-textarea-not-empty'}`} onClick={handleTextareaCopy} name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={textareaText} ref={textareaRef} placeholder='Time not selected yet' title="Click here to copy your text!"
+      >
 
       </textarea>
-
-      <br />
-      <br />
 
       <button onClick={handleTextareaCopy}> 📋Copy text!</button>
 
