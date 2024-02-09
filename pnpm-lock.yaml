@@ -32,6 +32,9 @@ dependencies:
   moment-timezone:
     specifier: ^0.5.45
     version: 0.5.45
+  open-props:
+    specifier: ^1.6.18
+    version: 1.6.18
   react:
     specifier: ^18.2.0
     version: 18.2.0
@@ -2442,6 +2445,10 @@ packages:
     dependencies:
       wrappy: 1.0.2
     dev: true
+
+  /open-props@1.6.18:
+    resolution: {integrity: sha512-xhkbGo6vFdYHWR9mt81p4mlPoRLQHunA6XJAuQ2cUyvoOGKGxDj8dGgXDIbR1EMJVyHPxU1AbtfbloAIRLHWKw==}
+    dev: false
 
   /optionator@0.9.3:
     resolution: {integrity: sha512-JjCoypp+jKn1ttEFExxhetCKeJt9zhAgAve5FXHixTvFDW/5aEktX9bufBKLRRMdU7bNtpLfcGu94B3cdEJgjg==}

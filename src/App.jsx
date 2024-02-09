@@ -35,6 +35,7 @@ function App() {
   const setSelectedTime = useClockStore((state) => state.setSelectedTime);
 
 
+
   // TODO put this MUI styling on a better place
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
@@ -77,7 +78,7 @@ function App() {
   // addTimezone used for handlers and templates 
   function addTimezone(timezoneItem) {
     // console.log(timezoneItem)
-    if(timezoneItem.redundant){
+    if (timezoneItem.redundant) {
       return
     }
     let new_zone_selected_obj = {
@@ -292,16 +293,18 @@ function App() {
 
         {timezoneSelection.length ?
           <details>
-            <summary className='selection-dropdown-title'>
+            <summary
+              className={`selection-dropdown-title ${timezoneSelection.length ? 'slide-fade-in' : 'slide-fade-out'}`}
+            >
               🔍 Current selection:
             </summary>
 
             <ul className='flag-selection'>
               {timezoneSelection
-              .map((timezoneItem) => (
-                <button title="Click to remove from selection" onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
-                </button>
-              ))}
+                .map((timezoneItem) => (
+                  <button title="Click to remove from selection" onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
+                  </button>
+                ))}
             </ul>
 
 
@@ -329,7 +332,7 @@ function App() {
         />
 
         <TextareaAutosize
-          placeholder='Time not selected yet'
+          placeholder='Time not selected yet, add some timezones to see them here!'
           title="Also click here to copy your text!"
           readOnly
           minRows={"5"}

@@ -19,6 +19,7 @@
     "country-flag-emoji-polyfill": "^0.1.8",
     "luxon": "^3.4.4",
     "moment-timezone": "^0.5.45",
+    "open-props": "^1.6.18",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "zustand": "^4.5.0"

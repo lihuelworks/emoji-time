@@ -1,4 +1,8 @@
 @import "reset.css";
+@import "open-props/normalize";
+@import "open-props/animations";
+@import "open-props/easings";
+@import "open-props/style";
 
 :root {
   font-family: "Twemoji Country Flags", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -77,6 +81,7 @@ button {
 
 button:disabled {
   cursor: default;
+  opacity: 25%;
 }
 
 
@@ -86,11 +91,18 @@ button:disabled {
 /* project title */
 .project-title {
   font-weight: 900;
+  margin-bottom: 0.75em;
 }
 
 /* List of selected countries zone */
+
+details {
+  background-color: transparent; /* This overwrites an open-props normalize property */
+}
+
 summary {
   /* summary element */
+  background-color: transparent; /* This overwrites an open-props normalize property */
   -webkit-user-select: none;
   user-select: none;
   cursor: pointer;
@@ -100,21 +112,31 @@ summary {
 }
 
 summary:hover {
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* Adjust shadow values as needed */
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+  /* Adjust shadow values as needed */
 }
 
-.flag-selection,
-.template-selection {
+
+.template-selection,
+.flag-selection {
   display: flex;
   justify-content: center;
   gap: 0.5em;
   flex-wrap: wrap;
   /* Container expands to fit content */
-  width: -moz-fit-content;
-  width: fit-content;
+  /* width: -moz-fit-content; */
+  width: 100%;
   padding: 0;
+}
+
+.template-selection {
+  margin-bottom: 1rem;
+}
+
+.flag-selection {
   margin-bottom: 2rem;
 }
+
 
 /* date-time (only time) input */
 #time-selector-input {
@@ -123,6 +145,7 @@ summary:hover {
   padding-left: 0.5em;
   padding-right: 0.2em;
 }
+
 /* Timezone selector from MUI styles */
 
 
@@ -194,6 +217,33 @@ summary:hover {
   background-color: oklch(32.05% 0.041 246.65);
 }
 
+/* animations */
+@keyframes fade-in {
+  /* Could use the open-props one but it's just a "opacity: 0" with nothing else. IDK what I'm supposed to do with it. */
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-fade-in {
+  animation:
+    var(--animation-fade-in) backwards,
+    var(--animation-slide-in-down);
+    
+  animation-timing-function: var(--ease-elastic-in-out-2);
+  animation-duration: 1s;
+}
+
+.slide-fade-out {
+  animation:
+  fade-in,
+    var(--animation-slide-out-down);
+  animation-timing-function: var(--ease-elastic-in-out-1);
+  animation-duration: 0.5s;
+}
 
 /* Media queries */
 
@@ -201,6 +251,12 @@ summary:hover {
   :root {
     color: #213547;
     background-color: #ffffff;
+  }
+
+  
+
+  .textarea-clear-all-button {
+    color: #f9f9f9;;
   }
 
   a:hover,
