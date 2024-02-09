@@ -163,6 +163,9 @@ summary:hover {
 #timezones-textarea {
   font-family: "Twemoji Country Flags", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
+.MuiAutocomplete-option {
+  max-inline-size: 100%; /* For some reason open-props breaks this too, which was really fun to figure it out (help). Don't touch this. */
+}
 
 /* section separator */
 .section-separator {
@@ -242,7 +245,7 @@ summary:hover {
   fade-in,
     var(--animation-slide-out-down);
   animation-timing-function: var(--ease-elastic-in-out-1);
-  animation-duration: 0.5s;
+  animation-duration: 0.3s;
 }
 
 /* Media queries */
