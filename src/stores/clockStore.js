@@ -13,14 +13,27 @@ const newTimezoneListArray = timezoneListArray.map(item => ({
   countryFlag: getFlagEmoji(item.countryCode), // Assuming countryCode is part of your data
 }));
 
-const useClockStore = create((set) => ({
+const useClockStore = create((set) => {
+  const updateClock = () => {
+    set(state => ({
+      currentTime: DateTime.now(),
+    }));
+  };
+
+  // Update the clock every second
+  const startClock = () => {
+    updateClock(); // Update immediately
+    setInterval(updateClock, 1000);
+  };
+
+  return {
     timezoneList: newTimezoneListArray,
     currentTime: DateTime.now(),
     selectedTime: DateTime.now(),
     currentTimezone: DateTime.now().zoneName,
     setSelectedTime: (selectedTime) => set({ selectedTime }),
-    // selectedTimezone: "",
-    // setSelectedTimezone: (selectedTimezone) => set({ selectedTimezone }),
-  }));
+    startClock,
+  };
+});
 
   export default useClockStore;
