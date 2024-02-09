@@ -33,9 +33,7 @@ function App() {
   const currentTimezone = useClockStore((state) => state.currentTimezone);
   const selectedTime = useClockStore((state) => state.selectedTime);
   const setSelectedTime = useClockStore((state) => state.setSelectedTime);
-
-
-
+  
   // TODO put this MUI styling on a better place
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
