@@ -60,24 +60,10 @@ timezoneTemplates.brazil = {
   title: 'LATAM + Spain + Brazil',
   timezones: [
     ...timezoneTemplates.latamSpain.timezones,
-    'America/Sao_Paulo',
-    'America/Rio_Branco',
-    'America/Manaus',
-    'America/Recife',
-    'America/Bahia',
-    'America/Fortaleza',
-    'America/Belem',
-    'America/Cuiaba',
-    'America/Porto_Velho',
-    'America/Maceio',
-    'America/Boa_Vista',
-    'America/Araguaina',
-    'America/Campo_Grande',
-    'America/Joao_Pessoa',
-    'America/Santarem',
-    'America/Teresina',
-    'America/Ponta_Por',
-    'America/Fort_Nelson',
+    'America/Sao_Paulo', // Sao Paulo (Brasilia Time)
+    'America/Rio_Branco', // Rio Blanco (Acre time)
+    'America/Manaus', // Manaus (Amazon time)
+    'America/Noronha', // Noronha (Fernando de Noronha Time)
   ],
 };
 
