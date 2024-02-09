@@ -1,3 +1,5 @@
+@import "reset.css";
+
 :root {
   font-family: "Twemoji Country Flags", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -23,6 +25,7 @@
 
   margin: auto;
   padding: 2rem;
+  padding-top: 0.5rem;
 
   text-align: center;
 }
@@ -42,20 +45,20 @@ a:hover {
 
 
 h1 {
-  margin-top: 0.2em;
+
   font-size: 3.2em;
   line-height: 1.1;
 }
 
+h1,
 h2 {
-  font-size: 2em;
-  /* line-height: 1.1; */
+  margin-top: 0.2em;
+  margin-bottom: 0.5em;
 }
 
-summary {
-  -webkit-user-select: none;
-  user-select: none;
-  cursor: pointer;
+h2 {
+  font-size: 1.7em;
+  /* line-height: 1.1; */
 }
 
 button {
@@ -73,23 +76,28 @@ button {
 /* List of selected countries zone */
 /* TODO semantically separate better this zones when you figure out a better relationship */
 
-.selection-dropdown-title {
-  /* Same as summary element, separated for semantic reasons */
+summary {
+  /* summary element */
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
   font-size: 1.2em;
   font-weight: 700;
   margin-bottom: 1em;
-
 }
-.selection-dropdown-title:hover {
-  /* TODO add hover styles */
+
+summary:hover {
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* Adjust shadow values as needed */
 }
 
 .selection-clear-all-button {
-  background-color: rgb(114, 15, 15);
-  margin-block: 2em;
+  font-size: 1.2em;
+  background-color: rgb(94, 29, 29);
+  margin-top: 1.2em;
 }
 
-.flag-selection {
+.flag-selection,
+.template-selection {
   display: flex;
   justify-content: center;
   gap: 0.5em;
@@ -97,19 +105,37 @@ button {
   /* Container expands to fit content */
   width: -moz-fit-content;
   width: fit-content;
+  padding: 0;
+  margin-bottom: 2.5rem;
+}
+
+/* date-time (only time) input */
+#time-selector-input {
+  font-size: 2.5em;
+  font-weight: bolder;
+  margin: 0.5rem;
+  /* padding-inline: 2rem; */
+  padding-left: 0.5em;
+  padding-right: 0.3em;
 }
 
 /* Timezone selector from MUI styles */
 
-#timezone-selector-input, .MuiTextField-root {
+#timezone-selector-input {
   /* MUI bug: Sadly I need to use " !important " on some fields to avoid MUI Style overwrite, could avoid it by using themes but then my styles would be all over the project */
   display: flex;
   color: white !important;
-  width: min(50vw, 750px) !important;
+  width: min(60vw, 900px) !important;
 }
 
-.MuiInputLabel-root { 
-color: white !important;
+
+.MuiAutocomplete-root {
+  margin-bottom: 2em;
+}
+
+.MuiInputLabel-root {
+  /* TODO this is the option that makes "Choose your timezones" have legible color in dark mode, sadly it would need to also have 3k more options for borders and such, remove after figuring out variants/themes */
+  /* color: white !important; */
 }
 
 .MuiAutocomplete-listbox,
@@ -129,18 +155,34 @@ color: white !important;
 #timezones-textarea {
   display: flex;
   font-size: 1.2rem;
-  padding: 3em;
-  padding-bottom: 3em;
-  padding-top: 1.5em;
+  padding: 1.5em 3em;
   width: 70%;
   resize: none;
-  margin: auto;
+}
+
+#timezones-textarea>div {
+  background-color: red;
 }
 
 .timezones-textarea-not-empty {
   cursor: pointer;
 }
 
+/* textarea-copy-button */
+.textarea-copy-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+  height: 4rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-block-start: 1em;
+}
+
+.textarea-copy-button:hover {
+  background-color: oklch(32.05% 0.041 246.65);
+}
 
 /* Media queries */
 
