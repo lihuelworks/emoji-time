@@ -11,6 +11,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --custom-width: min(80%, 900px);
 
 }
 
@@ -58,7 +59,7 @@ h2 {
 
 h2 {
   font-size: 1.7em;
-  /* line-height: 1.1; */
+  line-height: 1.1;
 }
 
 button {
@@ -72,6 +73,12 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
+
+button:disabled {
+  cursor: default;
+}
+
 
 /* CLASSES */
 /* TODO semantically separate better this zones when you figure out a better relationship */
@@ -106,31 +113,26 @@ summary:hover {
   width: -moz-fit-content;
   width: fit-content;
   padding: 0;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 
 /* date-time (only time) input */
 #time-selector-input {
   font-size: 2.5em;
   font-weight: bolder;
-  margin: 0.5rem;
-  /* padding-inline: 2rem; */
   padding-left: 0.5em;
-  padding-right: 0.3em;
+  padding-right: 0.2em;
 }
-
 /* Timezone selector from MUI styles */
-
-#timezone-selector-input {
-  /* MUI bug: Sadly I need to use " !important " on some fields to avoid MUI Style overwrite, could avoid it by using themes but then my styles would be all over the project */
-  display: flex;
-  color: white !important;
-  width: min(60vw, 900px) !important;
-}
 
 
 .MuiAutocomplete-root {
+  /* MUI bug: Sadly I need to use " !important " on some fields to avoid MUI Style overwrite, could avoid it by using themes but then my styles would be all over the project */
+  /* Same as #timezone-selector-input */
+  width: var(--custom-width) !important;
   margin-bottom: 2em;
+  display: flex;
+  color: white !important;
 }
 
 .MuiAutocomplete-listbox,
@@ -139,19 +141,22 @@ summary:hover {
   font-family: "Twemoji Country Flags", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
-
-
-.MuiAutocomplete {
-  width: 70%;
+/* section separator */
+.section-separator {
+  width: min(50%, 1000px);
+  opacity: 30%;
+  text-align: center;
+  margin: 2em 0 1.5em;
 }
 
 /* Textarea styles */
 
 #timezones-textarea {
-  display: flex;
-  font-size: 1.2rem;
-  padding: 1.5em 3em;
-  width: 70%;
+  /* Putting a custom font-size completely nullifies autoresize on textaera */
+  /* Implementing height auto-resize it's painful, so I'm giving up on setting my own font size, leaving my defeat right here */
+  /* font-size: 1.2rem; */
+  padding: 1em 3em 2em;
+  width: var(--custom-width) !important;
   resize: none;
 }
 
@@ -175,7 +180,7 @@ summary:hover {
   margin-block-start: 1em;
 }
 
-.textarea-copy-button:hover {
+.textarea-copy-button:hover:enabled {
   background-color: oklch(32.05% 0.041 246.65);
 }
 
@@ -183,6 +188,10 @@ summary:hover {
   font-size: 1.2em;
   background-color: rgb(94, 29, 29);
   margin-top: 1.2em;
+}
+
+.textarea-copy-button:hover:enabled {
+  background-color: oklch(32.05% 0.041 246.65);
 }
 
 

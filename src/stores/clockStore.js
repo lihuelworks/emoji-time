@@ -13,22 +13,8 @@ const countryFlagTimezoneList = timezoneListArray.map(item => ({
   countryFlag: getFlagEmoji(item.countryCode), // Assuming countryCode is part of your data
 }));
 
-// Filter out timezones with duplicate offsets and country names
-const filteredTimezoneList = countryFlagTimezoneList.filter((timezone, index, self) => {
-  const hasDuplicate = self.some((otherTimezone, otherIndex) => {
-    return (
-      index !== otherIndex &&
-      timezone.currentTimeOffsetInMinutes === otherTimezone.currentTimeOffsetInMinutes &&
-      timezone.countryName === otherTimezone.countryName
-    );
-  });
-
-  return !hasDuplicate;
-});
-
-
 const useClockStore = create((set) => ({
-    timezoneList: filteredTimezoneList,
+    timezoneList: countryFlagTimezoneList,
     currentTime: DateTime.now(),
     selectedTime: DateTime.now(),
     currentTimezone: DateTime.now().zoneName,

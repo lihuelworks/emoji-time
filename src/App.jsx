@@ -20,7 +20,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import Button from '@mui/material/Button';
 
 function App() {
   if (window.chrome) {
@@ -89,7 +88,7 @@ function App() {
     // Check if item is already in selection
     if (timezoneSelection.some(element => element.name === new_zone_selected_obj.name)) {
       // alert("Item already in selection!")
-      setSnackbarMessage('Item already in selection!')
+      setSnackbarMessage(`${new_zone_selected_obj.countryName} already in selection!`)
       setIsSnackbarOpen(true)
 
       return
@@ -128,7 +127,7 @@ function App() {
     // Delete event for selection buttons
     if (type === "delete") {
       chosenValue = event.target.value;
-      // console.log("value for delete ", chosenValue)
+      console.log("value for delete ", chosenValue)
       deleteSelectionItem(chosenValue)
       return
     }
@@ -263,30 +262,19 @@ function App() {
       <ThemeProvider theme={theme}>
         <Snackbar
           open={isSnackbarOpen}
-          autoHideDuration={3000}
+          autoHideDuration={2000}
           onClose={handleSnackbarClose}
           message={snackbarMessage}
           action={snackbarAction}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         />
+
         <h1 className='project-title'>EMOJI-TIME</h1>
         <h2 htmlFor="time-selector-input">Choose a time for your event: </h2>
         <label hidden htmlFor="time-selector-input">Choose a time for your event: </label>
         <input step="300" value={selectedTime.toFormat('HH:mm') || ''} onChange={handleTimeChange} type="time" id="time-selector-input" name="time-selector-input" required />
-        <details>
-          <summary className='selection-dropdown-title'>
-            🔍 Current selection:
-          </summary>
-          {timezoneSelection.length ?
-            (<ul className='flag-selection'>
-              {timezoneSelection.map((timezoneItem) => (
-                <button title="Click to remove from selection" onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
-                </button>
-              ))}
-            </ul>)
-            : (<p className='flag-selection'>Nothing selected yet! Maybe add some timezones!</p>)}
 
-        </details>
+        <hr className='section-separator' />
 
         <details>
           <summary>📃 Templates: </summary>
@@ -298,6 +286,22 @@ function App() {
             ))}
           </div>
         </details>
+
+        {timezoneSelection.length ?
+          <details>
+            <summary className='selection-dropdown-title'>
+              🔍 Current selection:
+            </summary>
+
+            <ul className='flag-selection'>
+              {timezoneSelection.map((timezoneItem) => (
+                <button title="Click to remove from selection" onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
+                </button>
+              ))}
+            </ul>
+
+
+          </details> : null}
 
 
         <Autocomplete
@@ -320,13 +324,32 @@ function App() {
           renderInput={(params) => <TextField {...params} label="Choose your timezones" />}
         />
 
-        <textarea className={`${textareaText.trim() === '' ? '' : 'timezones-textarea-not-empty'}`} onClick={handleTextareaCopy} name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={textareaText} ref={textareaRef} placeholder='Time not selected yet' title="Also click here to copy your text!"
+        <TextareaAutosize
+          placeholder='Time not selected yet'
+          title="Also click here to copy your text!"
+          readOnly
+          minRows={"5"}
+
+          className={`${textareaText.trim() === '' ? '' : 'timezones-textarea-not-empty'}`}
+          onClick={handleTextareaCopy}
+
+          name="timezones-textarea"
+          id="timezones-textarea"
+          value={textareaText}
+          ref={textareaRef}
+
         >
 
-        </textarea>
+        </TextareaAutosize>
 
-        <button className='textarea-copy-button' onClick={handleTextareaCopy}> 📋 Copy text! </button>
         <button
+          disabled={textareaText.trim() === ''}
+          className='textarea-copy-button'
+          onClick={handleTextareaCopy}>
+          📋 Copy text!
+        </button>
+        <button
+          disabled={textareaText.trim() === ''}
           className='textarea-clear-all-button'
           onClick={() => {
             clearSelection()
