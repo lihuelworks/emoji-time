@@ -77,6 +77,9 @@ function App() {
   // addTimezone used for handlers and templates 
   function addTimezone(timezoneItem) {
     // console.log(timezoneItem)
+    if(timezoneItem.redundant){
+      return
+    }
     let new_zone_selected_obj = {
       name: timezoneItem.name,
       countryName: timezoneItem.countryName,
@@ -294,7 +297,8 @@ function App() {
             </summary>
 
             <ul className='flag-selection'>
-              {timezoneSelection.map((timezoneItem) => (
+              {timezoneSelection
+              .map((timezoneItem) => (
                 <button title="Click to remove from selection" onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
                 </button>
               ))}
@@ -310,7 +314,7 @@ function App() {
           key={autocompleteKey}
           disablePortal
           theme={theme}
-          options={timezoneList}
+          options={timezoneList.filter(option => !option.redundant)}
           getOptionLabel={(option) => option.defaultPlaceholder ? option.defaultPlaceholder : `${option.countryFlag} ${option.countryName} - ${option.name.split("/")[1].split("_").join(" ")} (${option.alternativeName})`}
           getOptionKey={(option) => option.name}
           /* value */
