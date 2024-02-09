@@ -269,12 +269,10 @@ function App() {
           action={snackbarAction}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         />
-        <h1>Emoji-time</h1>
+        <h1 className='project-title'>EMOJI-TIME</h1>
         <h2 htmlFor="time-selector-input">Choose a time for your event: </h2>
         <label hidden htmlFor="time-selector-input">Choose a time for your event: </label>
         <input step="300" value={selectedTime.toFormat('HH:mm') || ''} onChange={handleTimeChange} type="time" id="time-selector-input" name="time-selector-input" required />
-
-        <h2>👇🏻 Select your timezone: </h2>
         <details>
           <summary className='selection-dropdown-title'>
             🔍 Current selection:
@@ -282,11 +280,11 @@ function App() {
           {timezoneSelection.length ?
             (<ul className='flag-selection'>
               {timezoneSelection.map((timezoneItem) => (
-                <button onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
+                <button title="Click to remove from selection" onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
                 </button>
               ))}
             </ul>)
-            : (<p>Nothing selected yet! Maybe add some timezones!</p>)}
+            : (<p className='flag-selection'>Nothing selected yet! Maybe add some timezones!</p>)}
 
         </details>
 
@@ -322,18 +320,14 @@ function App() {
           renderInput={(params) => <TextField {...params} label="Choose your timezones" />}
         />
 
-
-
-        <h2>📋 Test textarea copy-zone </h2>
-
-        <textarea className={`${textareaText.trim() === '' ? '' : 'timezones-textarea-not-empty'}`} onClick={handleTextareaCopy} name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={textareaText} ref={textareaRef} placeholder='Time not selected yet' title="Click here to copy your text!"
+        <textarea className={`${textareaText.trim() === '' ? '' : 'timezones-textarea-not-empty'}`} onClick={handleTextareaCopy} name="timezones-textarea" id="timezones-textarea" cols="30" rows="10" readOnly value={textareaText} ref={textareaRef} placeholder='Time not selected yet' title="Also click here to copy your text!"
         >
 
         </textarea>
 
         <button className='textarea-copy-button' onClick={handleTextareaCopy}> 📋 Copy text! </button>
         <button
-          className='selection-clear-all-button'
+          className='textarea-clear-all-button'
           onClick={() => {
             clearSelection()
           }}>Clear all</button>

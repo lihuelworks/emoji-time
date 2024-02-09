@@ -73,9 +73,15 @@ button {
   transition: border-color 0.25s;
 }
 
-/* List of selected countries zone */
+/* CLASSES */
 /* TODO semantically separate better this zones when you figure out a better relationship */
 
+/* project title */
+.project-title {
+  font-weight: 900;
+}
+
+/* List of selected countries zone */
 summary {
   /* summary element */
   -webkit-user-select: none;
@@ -88,12 +94,6 @@ summary {
 
 summary:hover {
   text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* Adjust shadow values as needed */
-}
-
-.selection-clear-all-button {
-  font-size: 1.2em;
-  background-color: rgb(94, 29, 29);
-  margin-top: 1.2em;
 }
 
 .flag-selection,
@@ -131,11 +131,6 @@ summary:hover {
 
 .MuiAutocomplete-root {
   margin-bottom: 2em;
-}
-
-.MuiInputLabel-root {
-  /* TODO this is the option that makes "Choose your timezones" have legible color in dark mode, sadly it would need to also have 3k more options for borders and such, remove after figuring out variants/themes */
-  /* color: white !important; */
 }
 
 .MuiAutocomplete-listbox,
@@ -183,6 +178,13 @@ summary:hover {
 .textarea-copy-button:hover {
   background-color: oklch(32.05% 0.041 246.65);
 }
+
+.textarea-clear-all-button {
+  font-size: 1.2em;
+  background-color: rgb(94, 29, 29);
+  margin-top: 1.2em;
+}
+
 
 /* Media queries */
 
