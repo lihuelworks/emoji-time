@@ -1,9 +1,14 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware'
 
-const useZoneSelectionStore = create((set) => ({
+const useZoneSelectionStore = create(persist((set) => ({
   selection: [],
-  setSelectionItem: (newItem) => set((state) => {
-    const newSelection = [...state.selection, newItem];
+  setSelectionItem: (newItem) => 
+  set((state) => {
+    // TODO localCompare tendria q comparar tmb alternative name o countryname o qsyo
+    const newSelection = [...state.selection, newItem].sort((a, b) =>
+      a.countryName.localeCompare(b.countryName)
+    );
     return { selection: newSelection };
   }),
   deleteSelectionItem: (itemName) => set((state) => {
@@ -15,6 +20,11 @@ const useZoneSelectionStore = create((set) => ({
       set({ selection: [] });
     }
   },
-}));
+}),
+  {
+    name: 'timezone-selection-storage',
+    storage: createJSONStorage(() => localStorage),
+  }
+));
 
 export default useZoneSelectionStore;
