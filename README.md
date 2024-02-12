@@ -9,6 +9,7 @@ Emoji Time is a versatile timezone selector, inspired by [MiduTime](https://midu
 ## Features
 
 - **Fuzzy Search**: Easily find timezones by area, country, and even main cities!
+- **Ordered text!**: Text ordered from earlier to later dates for easier reading!
 - **Dynamic Timezone Templates**: Automatically generates templates based on selected timezones, making it easy to visualize and organize your chosen timezones.
 - **Timezone Selection and Deletion**: Effortlessly manage your selected timezones with options to add and delete, ensuring a customizable and user-friendly interface.
 - **Current Timezone Display**: Keep track of the current timezone dynamically, providing real-time information to the user.
