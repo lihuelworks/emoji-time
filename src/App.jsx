@@ -66,8 +66,6 @@ function App() {
   const closeSnackbar = useSnackbarStore((state) => state.closeSnackbar);
 
   /* local variables and state */
-  const pathname = window.location.pathname
-  const [currentUrl, setCurrentUrl] = useState(pathname)
   let textareaText = ""
   const textareaRef = useRef(null);
   const [inputValue, setInputValue] = useState('');

@@ -43,7 +43,7 @@ export function useUrlParams() {
       });
       setSelection(urlTimezonesToAdd)
     }
-  }, [clearSelection, pathname, setSelection]);
+  }, [clearSelection, pathname, setSelection, timezoneList]);
 
 
   return currentUrl;
