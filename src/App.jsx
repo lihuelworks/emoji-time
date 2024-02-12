@@ -7,7 +7,10 @@ import useClockStore from './stores/clockStore.js';
 import useZoneSelectionStore from './stores/zoneSelectionStore.js';
 /* utils */
 import getFlagEmoji from './utils/getFlagEmoji.js';
-import { generateShareString, decodeShareString } from './utils/decodeEncodeUrl.js';
+import { generateShareString } from './utils/decodeEncodeUrl.js';
+import { findTimezone } from './utils/findTimezone.js';
+/* hooks */
+import useUrlParams from './hooks/useShareParameters.js';
 /* constants */
 import timezoneTemplates from './constants/timezoneTemplates.js';
 /* components */
@@ -17,7 +20,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { Snackbar } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-/*  */
+/* MUI related imports */
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Badge from '@mui/material/Badge';
@@ -32,7 +35,6 @@ function App() {
   // timezoneList from tzdb package
   const timezoneList = useClockStore((state) => state.timezoneList);
   // local time data (in state for some reason)
-  const currentTimezone = useClockStore((state) => state.currentTimezone);
   const selectedTime = useClockStore((state) => state.selectedTime);
   const setSelectedTime = useClockStore((state) => state.setSelectedTime);
 
@@ -52,7 +54,6 @@ function App() {
   /* useZoneSelectionStore */
   const timezoneSelection = useZoneSelectionStore((state) => state.selection);
   const setSelectionItem = useZoneSelectionStore((state) => state.setSelectionItem);
-  const setSelection = useZoneSelectionStore((state) => state.setSelection);
   const deleteSelectionItem = useZoneSelectionStore((state) => state.deleteSelectionItem);
   const clearSelection = useZoneSelectionStore((state) => state.clearSelection);
 
@@ -82,35 +83,6 @@ function App() {
   });
 
   // * UTILS functions (move to utils eventually?)
-  function findTimezone(value, searchType) {
-    // Normal search using exact name match
-    if (searchType === 'selectOption') {
-      const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === value);
-      if (selectedTimezone) return selectedTimezone;
-    }
-  
-    // Fuzzy search
-    return timezoneList.find(timezoneItem => {
-      if (searchType === 'fuzzyAdd') {
-        if (timezoneItem.name.toLowerCase().includes(value.replace(/ /g, "_")) ||
-          timezoneItem.countryName.toLowerCase().includes(value) ||
-          timezoneItem.alternativeName.toLowerCase().includes(value) ||
-          timezoneItem.currentTimeFormat.toLowerCase().includes(value)) {
-          return true;
-        }
-      } else {
-        // Default to fuzzy search if searchType is not 'selectOption'
-        if (timezoneItem.name.toLowerCase().includes(value.replace(/ /g, "_")) ||
-          timezoneItem.countryName.toLowerCase().includes(value) ||
-          timezoneItem.alternativeName.toLowerCase().includes(value) ||
-          timezoneItem.currentTimeFormat.toLowerCase().includes(value)) {
-          return true;
-        }
-      }
-      return false;
-    });
-  }
-  
   function addTimezone(timezoneItem) {
     if (timezoneItem.redundant) {
       return
@@ -138,37 +110,8 @@ function App() {
     return
   }
 
-  useEffect(() => {
-    setCurrentUrl(pathname)
-  },[pathname])
-
-  useEffect(() => {
-  // TODO move up or somewhere where it makes sense
-  // TODO fix THIS HOOK IS NEVER GONNA WORK WINDOW LOCATION IS NOT OBSERVABLE BY REACT
-  const timezonesParam = new URLSearchParams(window.location.search).get('timezones');
-  
-  if (timezonesParam) {
-    // Clear previous made selection
-    clearSelection(true)
-    // Decode the parameter value
-    const decodedNames = decodeShareString(timezonesParam);
-    let urlTimezonesToAdd = []
-
-    // Loop through each decoded name
-    decodedNames.forEach(decodedName => {
-      console.log("decoded ", decodedName)
-      
-      const selectedTimezone = findTimezone(decodedName, "selectOption")
-      
-      if (selectedTimezone) {
-        urlTimezonesToAdd = [...urlTimezonesToAdd, selectedTimezone]
-      }
-    });
-    console.log("ENDING urlTimezonesToAdd", urlTimezonesToAdd)
-    setSelection(urlTimezonesToAdd)
-  }
-}, [currentUrl]);
-
+  /* hook use */
+  useUrlParams()
 
   /* event handlers */
 
@@ -217,7 +160,7 @@ function handleUrlCopy(){
     if (type === 'fuzzyAdd') {
       chosenValue = inputValue;
 
-      const fuzzySelectedTimezone = findTimezone(chosenValue, 'fuzzyAdd');
+      const fuzzySelectedTimezone = findTimezone(chosenValue, timezoneList, 'fuzzyAdd');
 
       // console.log("fuzzySelectedTimezone", fuzzySelectedTimezone)
       if (fuzzySelectedTimezone) {
@@ -234,7 +177,7 @@ function handleUrlCopy(){
       // previously, reason was if "selecteTimezone existed", which will hopefully never be the case as it's always a selectable option.
       // selectOption is a much better candidate as it declares user intent
       chosenValue = event.name;
-      const selectedTimezone = findTimezone(chosenValue, "selectOption")
+      const selectedTimezone = findTimezone(chosenValue, timezoneList, "selectOption")
       addTimezone(selectedTimezone)
       setInputValue('')
       setAutocompleteKey((prevKey) => prevKey + 1)
@@ -405,7 +348,6 @@ function handleUrlCopy(){
           placeholder='Time not selected yet, add some timezones to see them here!'
           title="Also click here to copy your text!"
           readOnly
-          minRows={"5"}
 
           className={`${textareaText.trim() === '' ? '' : 'timezones-textarea-not-empty'}`}
           onClick={() => handleCopy(textareaRef)}
