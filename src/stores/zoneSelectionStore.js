@@ -5,10 +5,25 @@ const useZoneSelectionStore = create(persist((set) => ({
   selection: [],
   setSelectionItem: (newItem) => 
   set((state) => {
-    // TODO localCompare tendria q comparar tmb alternative name o countryname o qsyo
-    const newSelection = [...state.selection, newItem].sort((a, b) =>
-      a.countryName.localeCompare(b.countryName)
-    );
+    // This sorting is done mainly for the render on the "Current Selection" section
+    const newSelection = [...state.selection, newItem].sort((a, b) => {
+      // First, sort by countryName
+      const countryComparison = a.countryName.localeCompare(b.countryName);
+      if (countryComparison !== 0) {
+          return countryComparison;
+      }
+  
+      // If countryName is the same, sort by name (after processing)
+      const processedNameA = a.name.split("/")[1].split("_").join(" ");
+      const processedNameB = b.name.split("/")[1].split("_").join(" ");
+      const nameComparison = processedNameA.localeCompare(processedNameB);
+      if (nameComparison !== 0) {
+          return nameComparison;
+      }
+  
+      // If name is the same, sort by alternativeName
+      return a.alternativeName.localeCompare(b.alternativeName);
+  });
     return { selection: newSelection };
   }),
   deleteSelectionItem: (itemName) => set((state) => {
