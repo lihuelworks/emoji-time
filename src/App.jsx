@@ -1,5 +1,5 @@
 /* libraries */
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useMemo, useState, useEffect } from 'react';
 import { DateTime } from 'luxon';
 import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
 /* stores */
@@ -7,6 +7,7 @@ import useClockStore from './stores/clockStore.js';
 import useZoneSelectionStore from './stores/zoneSelectionStore.js';
 /* utils */
 import getFlagEmoji from './utils/getFlagEmoji.js';
+import { generateShareString, decodeShareString } from './utils/decodeEncodeUrl.js';
 /* constants */
 import timezoneTemplates from './constants/timezoneTemplates.js';
 /* components */
@@ -17,9 +18,10 @@ import { Snackbar } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 /*  */
-import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Badge from '@mui/material/Badge';
+
 
 function App() {
   if (window.chrome) {
@@ -33,7 +35,7 @@ function App() {
   const currentTimezone = useClockStore((state) => state.currentTimezone);
   const selectedTime = useClockStore((state) => state.selectedTime);
   const setSelectedTime = useClockStore((state) => state.setSelectedTime);
-  
+
   // TODO put this MUI styling on a better place
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
@@ -54,17 +56,20 @@ function App() {
   const clearSelection = useZoneSelectionStore((state) => state.clearSelection);
 
 
-  /* local variables / state */
+  /* local variables and state */
   let textareaText = ""
   const textareaRef = useRef(null);
   const [inputValue, setInputValue] = useState('');
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   // For future reference, any time this state (autocompleteKey) is used/set, it's ONLY to reset input value after selection
   // Hate this solution with all my soul, but it's the only way to reliably do it (https://github.com/mui/material-ui/issues/4736)
   const [autocompleteKey, setAutocompleteKey] = useState(0);
 
+  
   // Map to use alternative names in case of repeated countryName (e.g USA EST, PST, etc)
+  // TODO: NAMEOCCURRENCES AUX FUNCTION -> refactor this
   const nameOccurrences = {};
   timezoneList.forEach((timezoneItem) => {
     const { countryName } = timezoneItem;
@@ -73,9 +78,10 @@ function App() {
     // console.log("Occurrence ", countryName, nameOccurrences[countryName])
   });
 
-  // addTimezone used for handlers and templates 
+  /* Aux functions (move to utils eventually?) */
+  // TODO: fix import problem
   function addTimezone(timezoneItem) {
-    // console.log(timezoneItem)
+    console.log(timezoneItem)
     if (timezoneItem.redundant) {
       return
     }
@@ -92,7 +98,7 @@ function App() {
       // alert("Item already in selection!")
       setSnackbarMessage(`${new_zone_selected_obj.countryName} already in selection!`)
       setIsSnackbarOpen(true)
-
+      console.log("ALREADY IN SELECTION!")
       return
     }
 
@@ -102,8 +108,40 @@ function App() {
     return
   }
 
+  
+  useEffect(() => {
+  // TODO move up or somewhere where it makes sense
+  // TODO fix THIS HOOK IS NEVER GONNA WORK WINDOW LOCATION IS NOT OBSERVABLE BY REACT
+  const timezonesParam = new URLSearchParams(window.location.search).get('timezones');
+  console.log("--TIMEZONES PARAM ", timezonesParam)
+  
+  if (timezonesParam) {
+    // Decode the parameter value
+    const decodedNames = decodeShareString(timezonesParam);
+    console.log("🍌🍌 ", decodedNames)
+
+
+    // Loop through each decoded name
+    decodedNames.forEach(decodedName => {
+      console.log("decoded ", decodedName)
+      const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === decodedName);
+      
+      if (selectedTimezone) {
+        console.log("💥 TIMEZONE FOUND FOR,",decodedName," -> ",selectedTimezone)
+        addTimezone(selectedTimezone);
+      }
+    });
+  }
+}, []);
+
 
   /* event handlers */
+
+  function handleToggleDialog() {
+    setIsDialogOpen(!isDialogOpen)
+}
+
+  
   function handleTimeChange(event) {
     const selectedTimeObject = DateTime.fromFormat(event.target.value, 'HH:mm');
     setSelectedTime(selectedTimeObject);
@@ -137,9 +175,6 @@ function App() {
     // ENTER keyup event
     if (type === 'fuzzyAdd') {
       chosenValue = inputValue;
-      // console.log("ENTER SPOTTED", chosenValue)
-      // chosenValue = chosenValue.replace(/ /g, "_");
-      // console.log("after replace", chosenValue)
 
       const fuzzySelectedTimezone = timezoneList.find(timezoneItem => {
         // console.log("currentTimeFormat ", timezoneItem.currentTimeFormat.toLowerCase())
@@ -186,6 +221,7 @@ function App() {
 
   // Creates the text inside the textarea
   function createTextareaTimes() {
+    // console.log(nameOccurrences)
     // console.log("CREATE TEXTAREA CALLED!")
 
     if (timezoneSelection.length === 0) {
@@ -198,9 +234,9 @@ function App() {
       if (!groupedObjects.has(offset)) {
         groupedObjects.set(offset, []);
       }
-      if (nameOccurrences[obj.countryName] > 1 && (obj.countryName === 'United States' || obj.countryName === 'Brazil')) {
+      if (nameOccurrences[obj.countryName] > 1 && (obj.countryName === 'United States' || obj.countryName === 'Brazil' || obj.countryName === 'Argentina')) {
         let timezoneItemText = `${obj.countryFlag} ${obj.name.split("/")[1].split("_").join(" ")} (${obj.alternativeName})`
-        // console.log("NAMED OCCURENCE SPOTTED IN TEXTAREA", timezonePlusAlternativeName)
+        // console.log("NAMED OCCURENCE SPOTTED IN TEXTAREA", obj.alternativeName)
         groupedObjects.get(offset).push(timezoneItemText);
       } else {
         groupedObjects.get(offset).push(obj.countryFlag);
@@ -226,8 +262,8 @@ function App() {
 
   createTextareaTimes()
 
-  async function handleTextareaCopy() {
-    const text = textareaRef.current.value;
+  async function handleCopy(refParameter) {
+    const text = refParameter.current.value;
     if (!textareaRef.current.value) {
       return
     }
@@ -278,11 +314,11 @@ function App() {
 
         <hr className='section-separator' />
 
-        <details>
-          <summary>📃 Templates: </summary>
-          <div className='template-selection'>
+        <details className='template-selection-container'>
+          <summary className='template-selection-title'>📃 Templates: </summary>
+          <div className='template-selection-content'>
             {Object.entries(timezoneTemplates).map(([templateName, templateData]) => (
-              <button key={templateName} onClick={() => handleTemplateSelection(templateName)}>
+              <button key={templateName} title="Click to add countries templates to selection" onClick={() => handleTemplateSelection(templateName)}>
                 {templateData.title}
               </button>
             ))}
@@ -290,14 +326,18 @@ function App() {
         </details>
 
         {timezoneSelection.length ?
-          <details>
+          <details className='flag-selection-container'>
             <summary
-              className={`selection-dropdown-title ${timezoneSelection.length ? 'slide-fade-in' : 'slide-fade-out'}`}
+              className={`flag-selection-title ${timezoneSelection.length ? 'slide-fade-in' : 'slide-fade-out'}`}
             >
-              🔍 Current selection:
+              <Badge badgeContent={timezoneSelection.length} color="primary">
+                🔍 Current selection:
+              </Badge>
             </summary>
+            <p className='flag-selection secondary-title'>Ordered alphabetically</p>
 
-            <ul className='flag-selection'>
+
+            <ul className='flag-selection-content'>
               {timezoneSelection
                 .map((timezoneItem) => (
                   <button title="Click to remove from selection" onClick={(event) => handleTimezoneArrayChange(event, "delete")} value={timezoneItem.name} style={{ "listStyle": "none", "textAlign": "left" }} key={timezoneItem.name}>{timezoneItem.countryFlag} {timezoneItem.countryName}{nameOccurrences[timezoneItem.countryName] > 1 && " - " + timezoneItem.name.split("/")[1].split("_").join(" ") + " (" + timezoneItem.alternativeName + ")"}
@@ -336,7 +376,7 @@ function App() {
           minRows={"5"}
 
           className={`${textareaText.trim() === '' ? '' : 'timezones-textarea-not-empty'}`}
-          onClick={handleTextareaCopy}
+          onClick={() => handleCopy(textareaRef)}
 
           name="timezones-textarea"
           id="timezones-textarea"
@@ -350,15 +390,21 @@ function App() {
         <button
           disabled={textareaText.trim() === ''}
           className='textarea-copy-button'
-          onClick={handleTextareaCopy}>
+          onClick={() => handleCopy(textareaRef)}>
           📋 Copy text!
         </button>
-        <button
-          disabled={textareaText.trim() === ''}
-          className='textarea-clear-all-button'
-          onClick={() => {
-            clearSelection()
-          }}>Clear all</button>
+        <div>
+          <button
+            disabled={textareaText.trim() === ''}
+            className='textarea-clear-all-button'
+            onClick={clearSelection}>Clear all</button>
+            <button
+            disabled={textareaText.trim() === ''}
+            className='textarea-share-button'
+            onClick={clearSelection}>Share link!</button>
+        </div>
+
+        <footer>Done with {"<3"} by <a href="https://github.com/lihuelworks" rel="noreferrer" target='_blank' >Lihuelworks (Mathias Gomez)</a></footer>
       </ThemeProvider>
 
 

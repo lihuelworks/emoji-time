@@ -24,8 +24,9 @@
   min-width: 320px;
   max-width: 1280px;
 
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  align-items: start;
+  align-content: baseline;
   place-items: center;
 
   margin: auto;
@@ -104,6 +105,10 @@ summary {
   font-weight: 700;
 }
 
+footer {
+  margin-top: 4em;
+  font-style: italic;
+}
 
 /* CLASSES */
 /* TODO semantically separate better this zones when you figure out a better relationship */
@@ -183,7 +188,7 @@ summary {
   width: min(50%, 1000px);
   opacity: 30%;
   text-align: center;
-  margin: 2em 0 1.5em;
+  margin: 1em 0 1.5em;
 }
 
 /* Textarea styles */
