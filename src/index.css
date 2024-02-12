@@ -66,6 +66,11 @@ h2 {
   line-height: 1.1;
 }
 
+p {
+  /* another open-props resize (this one broke text below summaries */
+  max-inline-size: 100%;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -85,17 +90,6 @@ button:disabled {
 }
 
 
-/* CLASSES */
-/* TODO semantically separate better this zones when you figure out a better relationship */
-
-/* project title */
-.project-title {
-  font-weight: 900;
-  margin-bottom: 0.75em;
-}
-
-/* List of selected countries zone */
-
 details {
   background-color: transparent; /* This overwrites an open-props normalize property */
 }
@@ -108,17 +102,26 @@ summary {
   cursor: pointer;
   font-size: 1.2em;
   font-weight: 700;
-  margin-bottom: 1em;
 }
 
-summary:hover {
+
+/* CLASSES */
+/* TODO semantically separate better this zones when you figure out a better relationship */
+
+/* project title */
+.project-title {
+  font-weight: 900;
+  margin-bottom: 0.75em;
+}
+
+/* List of selected countries zone */
+[class$="-selection-title"]:hover {
   text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-  /* Adjust shadow values as needed */
 }
 
-
-.template-selection,
-.flag-selection {
+[class$="-selection-content"]{
+  /* .template-selection-content,
+  .flag-selection-content */
   display: flex;
   justify-content: center;
   gap: 0.5em;
@@ -129,14 +132,22 @@ summary:hover {
   padding: 0;
 }
 
-.template-selection {
-  margin-bottom: 1rem;
+
+.flag-selection-title {
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
-.flag-selection {
-  margin-bottom: 2rem;
+.flag-selection.secondary-title {
+  font-style: italic;
+  font-size: 0.9rem;
+  margin-bottom: 1em;
+  text-align: center;
 }
 
+.template-selection-container {
+  margin-bottom: 0.5rem;
+}
 
 /* date-time (only time) input */
 #time-selector-input {
@@ -153,7 +164,7 @@ summary:hover {
   /* MUI bug: Sadly I need to use " !important " on some fields to avoid MUI Style overwrite, could avoid it by using themes but then my styles would be all over the project */
   /* Same as #timezone-selector-input */
   width: var(--custom-width) !important;
-  margin-bottom: 2em;
+  margin: 2em 0;
   display: flex;
   color: white !important;
 }
@@ -186,10 +197,6 @@ summary:hover {
   resize: none;
 }
 
-#timezones-textarea>div {
-  background-color: red;
-}
-
 .timezones-textarea-not-empty {
   cursor: pointer;
 }
@@ -213,11 +220,26 @@ summary:hover {
 .textarea-clear-all-button {
   font-size: 1.2em;
   background-color: rgb(94, 29, 29);
-  margin-top: 1.2em;
+  margin: 1.2em;
+}
+
+.textarea-share-button {
+  font-size: 1.2em;
+  background-color: rgb(36, 56, 112);
+  margin: 1.2em;
 }
 
 .textarea-copy-button:hover:enabled {
   background-color: oklch(32.05% 0.041 246.65);
+}
+
+/* badge for current selection */
+.MuiBadge-root {
+  padding-right: 1.3rem;
+}
+
+.MuiBadge-badge {
+  width: 2em;
 }
 
 /* animations */
@@ -247,6 +269,7 @@ summary:hover {
   animation-timing-function: var(--ease-elastic-in-out-1);
   animation-duration: 0.3s;
 }
+
 
 /* Media queries */
 
