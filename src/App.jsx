@@ -52,11 +52,14 @@ function App() {
   /* useZoneSelectionStore */
   const timezoneSelection = useZoneSelectionStore((state) => state.selection);
   const setSelectionItem = useZoneSelectionStore((state) => state.setSelectionItem);
+  const setSelection = useZoneSelectionStore((state) => state.setSelection);
   const deleteSelectionItem = useZoneSelectionStore((state) => state.deleteSelectionItem);
   const clearSelection = useZoneSelectionStore((state) => state.clearSelection);
 
 
   /* local variables and state */
+  const pathname = window.location.pathname
+  const [currentUrl, setCurrentUrl] = useState(pathname)
   let textareaText = ""
   const textareaRef = useRef(null);
   const [inputValue, setInputValue] = useState('');
@@ -78,10 +81,37 @@ function App() {
     // console.log("Occurrence ", countryName, nameOccurrences[countryName])
   });
 
-  /* Aux functions (move to utils eventually?) */
-  // TODO: fix import problem
+  // * UTILS functions (move to utils eventually?)
+  function findTimezone(value, searchType) {
+    // Normal search using exact name match
+    if (searchType === 'selectOption') {
+      const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === value);
+      if (selectedTimezone) return selectedTimezone;
+    }
+  
+    // Fuzzy search
+    return timezoneList.find(timezoneItem => {
+      if (searchType === 'fuzzyAdd') {
+        if (timezoneItem.name.toLowerCase().includes(value.replace(/ /g, "_")) ||
+          timezoneItem.countryName.toLowerCase().includes(value) ||
+          timezoneItem.alternativeName.toLowerCase().includes(value) ||
+          timezoneItem.currentTimeFormat.toLowerCase().includes(value)) {
+          return true;
+        }
+      } else {
+        // Default to fuzzy search if searchType is not 'selectOption'
+        if (timezoneItem.name.toLowerCase().includes(value.replace(/ /g, "_")) ||
+          timezoneItem.countryName.toLowerCase().includes(value) ||
+          timezoneItem.alternativeName.toLowerCase().includes(value) ||
+          timezoneItem.currentTimeFormat.toLowerCase().includes(value)) {
+          return true;
+        }
+      }
+      return false;
+    });
+  }
+  
   function addTimezone(timezoneItem) {
-    console.log(timezoneItem)
     if (timezoneItem.redundant) {
       return
     }
@@ -108,39 +138,50 @@ function App() {
     return
   }
 
-  
+  useEffect(() => {
+    setCurrentUrl(pathname)
+  },[pathname])
+
   useEffect(() => {
   // TODO move up or somewhere where it makes sense
   // TODO fix THIS HOOK IS NEVER GONNA WORK WINDOW LOCATION IS NOT OBSERVABLE BY REACT
   const timezonesParam = new URLSearchParams(window.location.search).get('timezones');
-  console.log("--TIMEZONES PARAM ", timezonesParam)
   
   if (timezonesParam) {
+    // Clear previous made selection
+    clearSelection(true)
     // Decode the parameter value
     const decodedNames = decodeShareString(timezonesParam);
-    console.log("🍌🍌 ", decodedNames)
-
+    let urlTimezonesToAdd = []
 
     // Loop through each decoded name
     decodedNames.forEach(decodedName => {
       console.log("decoded ", decodedName)
-      const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === decodedName);
+      
+      const selectedTimezone = findTimezone(decodedName, "selectOption")
       
       if (selectedTimezone) {
-        console.log("💥 TIMEZONE FOUND FOR,",decodedName," -> ",selectedTimezone)
-        addTimezone(selectedTimezone);
+        urlTimezonesToAdd = [...urlTimezonesToAdd, selectedTimezone]
       }
     });
+    console.log("ENDING urlTimezonesToAdd", urlTimezonesToAdd)
+    setSelection(urlTimezonesToAdd)
   }
-}, []);
+}, [currentUrl]);
 
 
   /* event handlers */
 
-  function handleToggleDialog() {
-    setIsDialogOpen(!isDialogOpen)
+  function handleToggleDialog() {    setIsDialogOpen(!isDialogOpen)
 }
 
+function handleUrlCopy(){
+  setSnackbarMessage(`Share URL copied!`)
+  setIsSnackbarOpen(true)
+  let urlFromTimezoneSelection = generateShareString(timezoneSelection)
+  console.log("URL GOTTEN", urlFromTimezoneSelection)
+  handleCopy(urlFromTimezoneSelection)
+}
   
   function handleTimeChange(event) {
     const selectedTimeObject = DateTime.fromFormat(event.target.value, 'HH:mm');
@@ -176,17 +217,7 @@ function App() {
     if (type === 'fuzzyAdd') {
       chosenValue = inputValue;
 
-      const fuzzySelectedTimezone = timezoneList.find(timezoneItem => {
-        // console.log("currentTimeFormat ", timezoneItem.currentTimeFormat.toLowerCase())
-        if (timezoneItem.name.toLowerCase().includes(chosenValue.replace(/ /g, "_")) || timezoneItem.countryName.toLowerCase().includes(chosenValue) || timezoneItem.alternativeName.toLowerCase().includes(chosenValue)) {
-          return true
-        } else if (timezoneItem.currentTimeFormat.toLowerCase().includes(chosenValue)) {
-          return true
-        } else {
-          return false
-        }
-
-      });
+      const fuzzySelectedTimezone = findTimezone(chosenValue, 'fuzzyAdd');
 
       // console.log("fuzzySelectedTimezone", fuzzySelectedTimezone)
       if (fuzzySelectedTimezone) {
@@ -203,7 +234,7 @@ function App() {
       // previously, reason was if "selecteTimezone existed", which will hopefully never be the case as it's always a selectable option.
       // selectOption is a much better candidate as it declares user intent
       chosenValue = event.name;
-      const selectedTimezone = timezoneList.find(timezoneItem => timezoneItem.name === chosenValue);
+      const selectedTimezone = findTimezone(chosenValue, "selectOption")
       addTimezone(selectedTimezone)
       setInputValue('')
       setAutocompleteKey((prevKey) => prevKey + 1)
@@ -259,17 +290,14 @@ function App() {
     
     textareaText = resultText.join('\n')
 
-    // selectedTimezone ? selectedTime.setZone(selectedTimezone).toFormat('HH:mm') : "Time not selected yet"
-
   }
 
   createTextareaTimes()
 
-  async function handleCopy(refParameter) {
-    const text = refParameter.current.value;
-    if (!textareaRef.current.value) {
-      return
-    }
+  async function handleCopy(parameter) {
+    const text = parameter.current ? parameter.current.value : parameter;
+    if (!text) return;
+    
     try {
       await navigator.clipboard.writeText(text);
       // alert("Copied to clipboard!");
@@ -303,7 +331,8 @@ function App() {
       <ThemeProvider theme={theme}>
         <Snackbar
           open={isSnackbarOpen}
-          autoHideDuration={2000}
+          autoHideDuration={2500}
+          disableWindowBlurListener={true}
           onClose={handleSnackbarClose}
           message={snackbarMessage}
           action={snackbarAction}
@@ -400,11 +429,12 @@ function App() {
           <button
             disabled={textareaText.trim() === ''}
             className='textarea-clear-all-button'
-            onClick={clearSelection}>Clear all</button>
+            onClick={() => clearSelection(false)}>Clear all</button>
+
             <button
             disabled={textareaText.trim() === ''}
             className='textarea-share-button'
-            onClick={clearSelection}>Share link!</button>
+            onClick={handleUrlCopy}>Share link!</button>
         </div>
 
         <footer>Done with {"<3"} by <a href="https://github.com/lihuelworks" rel="noreferrer" target='_blank' >Lihuelworks (Mathias Gomez)</a></footer>
