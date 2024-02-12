@@ -253,7 +253,10 @@ function App() {
 
       resultText.push(`${displayTime} ${timezoneText}`);
     });
+    // Sort by time (which is the first piece of info in each line), so earlier times show up before later ones
+    resultText.sort();
 
+    
     textareaText = resultText.join('\n')
 
     // selectedTimezone ? selectedTime.setZone(selectedTimezone).toFormat('HH:mm') : "Time not selected yet"
