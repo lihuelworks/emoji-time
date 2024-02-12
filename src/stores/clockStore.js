@@ -8,8 +8,28 @@ let timezoneListArray = getTimeZones()
 // Sort the array by alternativeName
 timezoneListArray.sort((a, b) => a.countryName.localeCompare(b.countryName));
 
+// Correct territory attribution
+const untrashedTimezoneList = timezoneListArray.map(item => {
+  // Modify the object with name "Atlantic/Stanley"
+  if (item.name === "Atlantic/Stanley") {
+    return {
+      ...item,
+      name: "Argentina/Malvinas",
+      abbreviation: "MLVS",
+      alternativeName: "Islas Malvinas Time",
+      group: ["Argentina/Malvinas"],
+      countryName: "Argentina",
+      countryCode: "AR",
+      mainCities: ["Puerto Argentino"],
+      rawFormat: "-03:00 Islas Malvinas Time - Puerto Argentino",
+      currentTimeFormat: "-03:00  Islas Malvinas Time - Puerto Argentino",
+    };
+  }
+  return item; // Return other timezone objects unchanged
+});
+
 // Add the countryFlag property to each object
-const propertyFilledTimezoneList = timezoneListArray.map((timezone, index, array) => ({
+const propertyFilledTimezoneList = untrashedTimezoneList.map((timezone, index, array) => ({
   ...timezone,
   countryFlag: getFlagEmoji(timezone.countryCode),
   redundant: array.some((otherTimezone, otherIndex) => 
