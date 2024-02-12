@@ -5,6 +5,7 @@ import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
 /* stores */
 import useClockStore from './stores/clockStore.js';
 import useZoneSelectionStore from './stores/zoneSelectionStore.js';
+import useSnackbarStore from './stores/snackbarStore.js';
 /* utils */
 import getFlagEmoji from './utils/getFlagEmoji.js';
 import { generateShareString } from './utils/decodeEncodeUrl.js';
@@ -57,6 +58,12 @@ function App() {
   const deleteSelectionItem = useZoneSelectionStore((state) => state.deleteSelectionItem);
   const clearSelection = useZoneSelectionStore((state) => state.clearSelection);
 
+  /* useSnackbarStore */
+  const isSnackbarOpen = useSnackbarStore((state) => state.isSnackbarOpen);
+  const snackbarMessage = useSnackbarStore((state) => state.snackbarMessage);
+  const setIsSnackbarOpen = useSnackbarStore((state) => state.setIsSnackbarOpen);
+  const setSnackbarMessage = useSnackbarStore((state) => state.setSnackbarMessage);
+  const closeSnackbar = useSnackbarStore((state) => state.closeSnackbar);
 
   /* local variables and state */
   const pathname = window.location.pathname
@@ -64,14 +71,12 @@ function App() {
   let textareaText = ""
   const textareaRef = useRef(null);
   const [inputValue, setInputValue] = useState('');
-  const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   // For future reference, any time this state (autocompleteKey) is used/set, it's ONLY to reset input value after selection
   // Hate this solution with all my soul, but it's the only way to reliably do it (https://github.com/mui/material-ui/issues/4736)
   const [autocompleteKey, setAutocompleteKey] = useState(0);
 
-  
+
   // Map to use alternative names in case of repeated countryName (e.g USA EST, PST, etc)
   // TODO: NAMEOCCURRENCES AUX FUNCTION -> refactor this
   const nameOccurrences = {};
@@ -115,17 +120,18 @@ function App() {
 
   /* event handlers */
 
-  function handleToggleDialog() {    setIsDialogOpen(!isDialogOpen)
-}
+  function handleToggleDialog() {
+    setIsDialogOpen(!isDialogOpen)
+  }
 
-function handleUrlCopy(){
-  setSnackbarMessage(`Share URL copied!`)
-  setIsSnackbarOpen(true)
-  let urlFromTimezoneSelection = generateShareString(timezoneSelection)
-  console.log("URL GOTTEN", urlFromTimezoneSelection)
-  handleCopy(urlFromTimezoneSelection)
-}
-  
+  function handleUrlCopy() {
+    setSnackbarMessage(`Share URL copied!`)
+    setIsSnackbarOpen(true)
+    let urlFromTimezoneSelection = generateShareString(timezoneSelection)
+    console.log("URL GOTTEN", urlFromTimezoneSelection)
+    handleCopy(urlFromTimezoneSelection)
+  }
+
   function handleTimeChange(event) {
     const selectedTimeObject = DateTime.fromFormat(event.target.value, 'HH:mm');
     setSelectedTime(selectedTimeObject);
@@ -184,15 +190,7 @@ function handleUrlCopy(){
     }
   }
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setIsSnackbarOpen(false);
-    setSnackbarMessage('')
-  };
-
-
+  
   // Creates the text inside the textarea
   function createTextareaTimes() {
     // console.log(nameOccurrences)
@@ -230,7 +228,7 @@ function handleUrlCopy(){
     // Sort by time (which is the first piece of info in each line), so earlier times show up before later ones
     resultText.sort();
 
-    
+
     textareaText = resultText.join('\n')
 
   }
@@ -240,7 +238,7 @@ function handleUrlCopy(){
   async function handleCopy(parameter) {
     const text = parameter.current ? parameter.current.value : parameter;
     if (!text) return;
-    
+
     try {
       await navigator.clipboard.writeText(text);
       // alert("Copied to clipboard!");
@@ -262,7 +260,7 @@ function handleUrlCopy(){
         size="small"
         aria-label="close"
         color="inherit"
-        onClick={handleSnackbarClose}
+        onClick={closeSnackbar}
       >
         <CloseIcon fontSize="small" />
       </IconButton>
@@ -276,7 +274,7 @@ function handleUrlCopy(){
           open={isSnackbarOpen}
           autoHideDuration={2500}
           disableWindowBlurListener={true}
-          onClose={handleSnackbarClose}
+          onClose={closeSnackbar}
           message={snackbarMessage}
           action={snackbarAction}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -373,7 +371,7 @@ function handleUrlCopy(){
             className='textarea-clear-all-button'
             onClick={() => clearSelection(false)}>Clear all</button>
 
-            <button
+          <button
             disabled={textareaText.trim() === ''}
             className='textarea-share-button'
             onClick={handleUrlCopy}>Share link!</button>
