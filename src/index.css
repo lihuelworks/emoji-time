@@ -119,6 +119,7 @@ footer {
   margin-bottom: 0.75em;
 }
 
+
 /* List of selected countries zone */
 [class$="-selection-title"]:hover {
   text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
