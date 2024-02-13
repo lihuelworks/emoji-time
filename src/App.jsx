@@ -375,7 +375,7 @@ function App() {
             onClick={handleUrlCopy}>Share link!</button>
         </div>
 
-        <footer>Done with {"<3"} by <a href="https://github.com/lihuelworks" rel="noreferrer" target='_blank' >Lihuelworks (Mathias Gomez)</a></footer>
+        <footer>Done with {"<3"} by <a href="https://github.com/lihuelworks" rel="noreferrer" target='_blank' >Lihuelworks (Mathias Gomez)</a>, inspired by <a href="https://midutime.netlify.app/" rel="noreferrer" target='_blank' >Midutime</a></footer>
       </ThemeProvider>
 
 
