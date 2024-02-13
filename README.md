@@ -1,6 +1,11 @@
-# NOTE: ⚠ Emoji Time is a work in progress ⚠
-
 # ⌛ Emoji Time
+## Try it out now! 👉🏻 https://emoji-time.vercel.app/
+
+## 🎥 Demo
+
+https://github.com/lihuelworks/emoji-time/assets/49965980/10776c29-448f-43b4-ba13-932bffc67a1c
+
+
 
 ## Overview
 
