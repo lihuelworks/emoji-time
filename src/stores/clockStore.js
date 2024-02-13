@@ -29,14 +29,14 @@ const untrashedTimezoneList = timezoneListArray.map(item => {
 });
 
 // Add the countryFlag property to each object
-const propertyFilledTimezoneList = untrashedTimezoneList.map((timezone, index, array) => ({
+const propertyFilledTimezoneList = untrashedTimezoneList.map((timezone/* , index, array */) => ({
   ...timezone,
   countryFlag: getFlagEmoji(timezone.countryCode),
-  redundant: array.some((otherTimezone, otherIndex) => 
+  /* redundant: array.some((otherTimezone, otherIndex) => 
     otherIndex !== index &&
     otherTimezone.currentTimeOffsetInMinutes === timezone.currentTimeOffsetInMinutes &&
     otherTimezone.countryName === timezone.countryName
-  )
+  ) */
 }));
 
 const useClockStore = create((set) => ({
